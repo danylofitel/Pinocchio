@@ -1,0 +1,11 @@
+\select@language {english}
+\contentsline {chapter}{Introduction}{3}
+\contentsline {chapter}{\numberline {1}Definitions and Overview of Problems}{4}
+\contentsline {section}{\numberline {1.1}Symmetric Groups and Permutation Groups}{4}
+\contentsline {section}{\numberline {1.2}Metrics on Permutations}{7}
+\contentsline {chapter}{\numberline {2}Minimum Weight Problem}{11}
+\contentsline {section}{\numberline {2.1}Minimum Weight Problem Over $l_{\infty }$ Metric}{11}
+\contentsline {section}{\numberline {2.2}Minimum Weight Problem Over Hamming Metric}{13}
+\contentsline {chapter}{\numberline {3}Complexity Limits}{16}
+\contentsline {chapter}{Conclusion}{20}
+\contentsline {chapter}{References}{22}
