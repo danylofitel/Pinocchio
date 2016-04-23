@@ -102,7 +102,58 @@ Now let us consider those machine learning algorithms that require distance metr
 
 \section{Naive Bayes Classifier}
 
-Words.
+Consider the simple case of text classification based on the presence or absence of just one word $W$. Suppose that we know that the word $W$ only occurs is spam messages. This gives us confidence that any message containing $W$ is spam. This approach can be generalized to the probability of a message feature vector occurring in the message.
+
+Suppose we have two classes $L$ and $S$ corresponding to legitimate and spam messages, and that there is a known probability distribution of feature vectors $P(x | c), c \in \{L, S\}$. In general it is hard to define such distribution, but it is often possible to provide an approximation. What we need to obtain is the class that the given message belongs to, or the probability $P(c | x)$. This can be done using the Bayes' formula
+
+\begin{center}
+	$P(c | x) = \dfrac{P(x | c) P(c)}{P(x)} = \dfrac{P(x | c) P(c)}{P(x | L) P(L) + P(x | S) P(S)}$.
+\end{center}
+
+where $P(x)$ is the a-priori probability of a message with feature vector $x$ and $P(c)$ is the probability of class $c$, i.e. the probability of any given message to belong to $c$. Given the values $P(c)$ and $P(x | c)$ for $c \in \{L, S\}$ one can calculate the probability $P(c | x)$ which cal then be used in a classification rule.
+
+The most basic classification rule is to classify message to the category with bigger probability.
+
+\begin{definition}
+	Maximum a-posteriori probability (MAP) rule: if $P(S | x) > P(L | x)$ then classify $x$ as spam, otherwise classify as legitimate message.
+\end{definition}
+
+The MAP rule can be transformed to
+
+\begin{center}
+	If $\dfrac{P(x | S)}{P(x | L)} > \dfrac{P(L)}{P(S)}$ then classify $x$ as spam, otherwise as legitimate message.
+\end{center}
+
+The ratio $\dfrac{P(x | S)}{P(x | L)}$ is known as the \textit{likelihood ratio} and is denoted as $\Lambda(x)$.
+
+This approach can be too simplistic for certain applications. For example, in case of e-mail spam filtering, false positives (classifying legitimate message as spam) are usually much more unwanted than false negatives (classifying spam as legitimate message). The following generalization allows to take such restrictions into account.
+
+\begin{definition}
+	A cost function $L(c_1, c_2)$ denotes the cost of misclassifying a message of class $c_1$ as the one belonging to class $c_2$.
+\end{definition}
+
+It is natural to put $L(L, L) = L(S, S) = 0$, but in general it might not be the case.
+
+Then we can express the expected risk of classifying a message $x$ belonging to class $c$ in the above terms.
+
+\begin{definition}
+	The function $R(c | x) = L(S, c) P(S |x) + L(L, c) P(L | x), x \in M, c \in \{L, S\}$ is called the risk function.
+\end{definition}
+
+Now we can define a natural classification rule in terms of expected risk.
+
+\begin{definition}
+	Bayes' classification rule: if $R(S | x) < R(L | x)$ then classify $x$ as spam, otherwise as legitimate message \cite{Kecman}.
+\end{definition}
+
+
+It can be shown that Bayesian classifier $f$ minimizes the average risk
+
+\begin{center}
+	$R(f) = \int L(c, f(x)) dP(c, x) = P(L) \int L(L, f(x))dP(x | L) + P(S) \int L(S, f(x))dP(x | S)$
+\end{center}
+
+so in this sense Bayesian classifier already is optimal \cite{Tretyakov}.
 
 \newpage
 
@@ -162,6 +213,8 @@ Words.
 
 \bibitem{Carreras} Xavier Carreras, Lluis Marquez. Boosting Trees for AntiSpam
 Email Filtering. TALP Research Center, LSI Department, Universitat Politecnica de Catalunya.
+
+\bibitem{Kecman} V. Kecman. Learning and Soft Computing. 2001, The MIT Press.
 
 \end{thebibliography}
 

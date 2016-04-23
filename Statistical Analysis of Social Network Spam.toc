@@ -5,12 +5,12 @@
 \contentsline {section}{\numberline {1.2}Feature Selection}{6}
 \contentsline {chapter}{\numberline {2}Basic Methods}{7}
 \contentsline {section}{\numberline {2.1}Naive Bayes Classifier}{7}
-\contentsline {section}{\numberline {2.2}k Nearest Neighbors Classifier}{8}
-\contentsline {section}{\numberline {2.3}Artificial Neural Network Classifier}{9}
-\contentsline {section}{\numberline {2.4}SVM Classifier}{10}
-\contentsline {section}{\numberline {2.5}Boosting}{11}
-\contentsline {chapter}{\numberline {3}Advanced Approaches}{12}
-\contentsline {section}{\numberline {3.1}Combined Boosting}{12}
-\contentsline {section}{\numberline {3.2}Adaptive Feature Selection}{13}
-\contentsline {chapter}{Conclusion}{14}
-\contentsline {chapter}{References}{15}
+\contentsline {section}{\numberline {2.2}k Nearest Neighbors Classifier}{9}
+\contentsline {section}{\numberline {2.3}Artificial Neural Network Classifier}{10}
+\contentsline {section}{\numberline {2.4}SVM Classifier}{11}
+\contentsline {section}{\numberline {2.5}Boosting}{12}
+\contentsline {chapter}{\numberline {3}Advanced Approaches}{13}
+\contentsline {section}{\numberline {3.1}Combined Boosting}{13}
+\contentsline {section}{\numberline {3.2}Adaptive Feature Selection}{14}
+\contentsline {chapter}{Conclusion}{15}
+\contentsline {chapter}{References}{16}
