@@ -33,6 +33,7 @@
 \newcommand{\bb}[1]{{\bf #1}}
 \newcommand{\wsp}{\hspace{6pt}}
 \newcommand{\re}{\mathbb{R}}
+\newcommand{\Loss}{\mathcal{L}}
 
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{definition}{Definition}[section]
@@ -129,15 +130,15 @@ The ratio $\dfrac{P(x | S)}{P(x | L)}$ is known as the \textit{likelihood ratio}
 This approach can be too simplistic for certain applications. For example, in case of e-mail spam filtering, false positives (classifying legitimate message as spam) are usually much more unwanted than false negatives (classifying spam as legitimate message). The following generalization allows to take such restrictions into account.
 
 \begin{definition}
-	A cost function $L(c_1, c_2)$ denotes the cost of misclassifying a message of class $c_1$ as the one belonging to class $c_2$.
+	A cost function $\Loss(c_1, c_2)$ denotes the cost of misclassifying a message of class $c_1$ as the one belonging to class $c_2$.
 \end{definition}
 
-It is natural to put $L(L, L) = L(S, S) = 0$, but in general it might not be the case.
+It is natural to put $\Loss(L, L) = \Loss(S, S) = 0$, but in general it might not be the case.
 
 Then we can express the expected risk of classifying a message $x$ belonging to class $c$ in the above terms.
 
 \begin{definition}
-	The function $R(c | x) = L(S, c) P(S |x) + L(L, c) P(L | x), x \in M, c \in \{L, S\}$ is called the risk function.
+	The function $R(c | x) = \Loss(S, c) P(S |x) + \Loss(L, c) P(L | x), x \in M, c \in \{L, S\}$ is called the risk function.
 \end{definition}
 
 Now we can define a natural classification rule in terms of expected risk.
@@ -146,14 +147,70 @@ Now we can define a natural classification rule in terms of expected risk.
 	Bayes' classification rule: if $R(S | x) < R(L | x)$ then classify $x$ as spam, otherwise as legitimate message \cite{Kecman}.
 \end{definition}
 
-
 It can be shown that Bayesian classifier $f$ minimizes the average risk
 
 \begin{center}
-	$R(f) = \int L(c, f(x)) dP(c, x) = P(L) \int L(L, f(x))dP(x | L) + P(S) \int L(S, f(x))dP(x | S)$
+	$R(f) = \int \Loss(c, f(x)) dP(c, x) = P(L) \int \Loss(L, f(x))dP(x | L) + P(S) \int \Loss(S, f(x))dP(x | S)$
 \end{center}
 
 so in this sense Bayesian classifier already is optimal \cite{Tretyakov}.
+
+Naturally, the loss of classifying the message correctly is zero, thus $L(S, S) = L(L, L) = 0$. Then the Bayes's classification rule can be rewritten as
+
+\begin{center}
+	If $\Lambda(x) > \lambda \dfrac{P(L)}{P(S)}$ classify as spam otherwise as legitimate message.
+\end{center}
+
+Here $\lambda = \dfrac{\Loss(L, S)}{\Loss(S, L)}$ is the additional parameter that specifies the risk of misclassifying legitimate messages as spam. As the value of $\lambda$ increases, the classifier produces fewer false positives.
+
+While the bare classification process is straightforward, the practical applications of Bayes's classifier are limited by our ability to approximate the a-priori probabilities $P(x | c)$ and $P(c), c \in \{L, S\}$ from the training data. Therefore, while the Bayes's classifier is optimal in the sense of minimizing the loss of classification for given a-priori probabilities, the quality of spam detection depends on the feature selection and approximation of these probabilities.
+
+$P(L)$ and $P(S)$ can be easily approximated by the ratio of legitimate and spam messages respectively. $P(x | c)$ is non-trivial and depends on the contents of selected feature vector. Consider the simplest case where the feature vector $x_w$ is $1$ if the message contains $w$ and $0$ otherwise. Then the probability $P(x_w = 1 | S)$ can be approximated by the ratio of spam messages containing $w$ to the ratio of all spam messages in a training set. This is sufficient to be used by the Bayes's classifier, so we can outline the training and selection process for this model.
+
+\textbf{Training process}
+
+\begin{enumerate}
+	\item Calculate probabilities $P(c)$, $P(x_w = 0 | c), P(x_w = 1 | c), c \in \{L, S\}$.
+	\item Using Bayes's formula calculate $P(c | x_w = 0)$ and $P(c | x_w = 1)$.
+	\item Calculate $\Lambda(x_w), x_w = 0, 1$, calculate $\lambda \dfrac{P(L)}{P(S)}$ and store these values.
+\end{enumerate}
+
+\textbf{Classification process}
+
+\begin{enumerate}
+	\item Determine feature vector $x_w$ for message $m$.
+	\item Retrieve the stored value $\Lambda(x_w)$.
+	\item Use Bayes's decision rule to determine class of the message.
+\end{enumerate}
+
+Now we need to generalize this classifier to include more features than just the presence of a single word. The simplest way (and a very common one) is to choose a set of most common words $w_1, w_2, \dots, w_n$ and define the feature vector $x = (x_1, x_2, \dots, x_n), x_i = $, $x_i = 1$ if the message contains $w_i$, $x_i = 0$ otherwise.
+
+The problem with this approach is that it requires calculation and storing of all possible values of the feature vector, and there are $2^n$ such vectors, which is not feasible. A common way to remove this requirement is to assume that the individual components of the vector are independent \cite{Tretyakov}. This assumption is not formally correct, but in practice it is a good compromise between formal correctness and computational requirements. Because of independence of features:
+
+\begin{center}
+	$P(x | c) = \prod_{i=1}^{n}P(x_i | c)$, $\Lambda(x) = \prod_{i=1}^{n}\Lambda_i(x_i)$
+\end{center}
+
+This classifier is known as Naive Bayesian Classifier due to assumption of independence of features. Training and classification are very simple computationally.
+
+\textbf{Training process}
+
+\begin{enumerate}
+	\item For all $w_i \in W$ calculate and store $\Lambda_i(x_i), x = 0, 1$.
+	\item Calculate and store $\lambda \dfrac{P(L)}{P(S)}$.
+\end{enumerate}
+
+\textbf{Classification process}
+
+\begin{enumerate}
+	\item Determine feature vector $x$ for message $m$.
+	\item calculate $\Lambda(x)$ using the stored values $\Lambda_i(x_i)$.
+	\item Use Naive Bayes's decision rule to determine class of the message.
+\end{enumerate}
+
+In terms of word selection for the feature vector, we will speak of the general case when all words from training set are used. This may not be feasible in practice, however, as it will result in a large vector. Usually words that are too common or too rare can be ignored.
+
+Another benefit of naive Bayesian filter is that it is very easy to expand the feature vector to include additional available metadata. In case of e-mails, for example, it would be contents of e-mail headers. It is possible to include additional components either to the calculation of the a-priory probability of the vector or to combine the risk of Bayesian classifier with additional risk calculated from metadata when making a decision.
 
 \newpage
 
