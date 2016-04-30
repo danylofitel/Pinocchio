@@ -61,7 +61,17 @@
 \chapter*{Introduction}
 \addcontentsline{toc}{chapter}{Introduction}
 
-True loneliness is when you don’t even receive spam.
+The problem of spam has been around since the early days of e-mail services and has since evolved to numerous forms. Spam can vary by platform (e-mail, instant messaging, social network messaging), by intention (from advertisement to phishing and ransom), by distribution targets (from a single individual or general public), etc.
+
+While the number of messaging domains is growing rapidly, the prime purpose of spam remains the same: to reach out to the recipient by any means or to trick him into acting on the message by disguising it as a legitimate message. This leads to a very clear practical definition of spam from user's perspective as any unsolicited message, whether it acknowledges its origin (e.g. harmless advertisement) or is crafted to gain the user's trust (e.g. phishing and ransom attacks).
+
+Given the large number of messaging systems to which spam is applicable, the problem of detection of unwanted correspondence has evolved along with distribution methods and now includes additional metadata like attached media and hyperlinks. While they may seem to increase the complexity of spam detection, they actually give a basis for additional means of filtering which are often much easier to perform than the raw text classification.
+
+For example, the vast majority of e-mail spam can be filtered out by simply checking the reputation of the sender's IP address and embedded hyperlinks. On the other hand, while it is possible to embed the text into images, their content can be easily retrieved by the use of optical character recognition and then appended to the main text.
+
+While the message metadata can provide additional information, in practice text classification is inevitable. It is usually the final step in classification process as it tends to be most expensive. Since the metadata processing is different from case to case, it is safe to say that the general problem of spam filtering comes down to the problem of binary text classification.
+
+Therefore, in this paper we consider a number of common statistical methods of performing spam filtering on text messages and suggest a number of improvements to a number of them. Additionally, we analyze some of the common problems like feature vector selection. Finally, we provide a performance comparison of the detailed algorithms in practice.
 
 \newpage
 
@@ -80,7 +90,7 @@ This, of course, applies to all messaging services. Maximum effectiveness can no
 
 Let us denote the set of all messages by $M$, and let $S \subseteq M$ be the set of spam messages and $L = M \setminus S$ be the set of legit messages. The ultimate goal is to obtain a decision function $f : M \rightarrow \{S, L\}$ that would determine whether a given message $m \in M$ is spam $(m \in S)$ or legitimate mail $(m \in L)$.
 
-We shall look for this function by training a number of machine learning algorithms on a set of pre-classified messages $\{(m_1, c_1), (m_2, c_2), ..., (m_n, c_n)\}, m_i \in M, c_i \in \{S, L\}, 1 \leq i \leq n$. There are two aspects for the case of text messages: we have to extract features from text strings and we may have strict requirements for the precision of classifier.
+We shall look for this function by training a number of machine learning algorithms on a set of already classified messages $\{(m_1, c_1), (m_2, c_2), ..., (m_n, c_n)\}, m_i \in M, c_i \in \{S, L\}, 1 \leq i \leq n$. There are two aspects for the case of text messages: we have to extract features from text strings and we may have strict requirements for the precision of classifier.
 
 \newpage
 
@@ -88,7 +98,7 @@ We shall look for this function by training a number of machine learning algorit
 
 The entities we need to classify are text messages that are given in the form of strings. Raw strings are not convenient objects to handle in this case. Most machine learning algorithms can only classify numerical objects or otherwise require a distance metric or other measure of similarity between the objects.
 
-Before proceeding with machine learning we have to convert all messages to numerical vectors, so called feature vectors, and then classify these vectors. The simplest example of a feature vector is the vector of the numbers of occurrences of certain words in a message. 
+Before proceeding with machine learning we have to convert all messages to numerical vectors called \textit{feature vectors}, and then classify these vectors. The simplest example of a feature vector is the vector of the numbers of occurrences of certain words in a message. 
 
 Extraction of features usually means that some information from the original message is lost. On the other hand, the way feature vector is chosen is crucial for the performance of the filter. If the features are chosen so that there may exist a spam message and a legitimate mail with the same feature vector, then any machine learning algorithm will make mistakes no matter how good it is. A wise choice of features will make classification much easier while also fast. In most practical applications the most basic vector of word frequencies or its modification is used.
 
@@ -216,40 +226,83 @@ Another benefit of naive Bayesian filter is that it is very easy to expand the f
 
 \section{k Nearest Neighbors Classifier}
 
-Words.
+$k$ Nearest Neighbors (or $k$-NN) is a modification of the classical Nearest Neighbors algorithm. The idea behind this classifier is to first define a metric on feature vectors and then classify the message according to classes of $k$ nearest messages in the training set. The metric is often chosen to be Euclidean, but Hamming and $l_p$ can also be used.
+
+\textbf{Training process}
+
+\begin{enumerate}
+	\item Store feature vectors of training messages in two sets $L$ and $S$.
+\end{enumerate}
+
+\textbf{Classification process}
+
+\begin{enumerate}
+	\item For message with feature vector $x$ determine $k$ nearest neighbors from messages in the training set. If there are more legitimate messages among them, classify $x$ as legitimate message, otherwise classify as spam.
+\end{enumerate}
+
+Since the algorithm does not require any preprocessing of the training dataset, the training process is trivial. The classification process, however, requires calculation of distances to all messages in the training set, and for feature vectors of length $m$ the most trivial implementations take $O(mn)$ time for set of $n$ messages in case of Hamming or $l_p$ metrics. Performing indexing on the training set can decrease the running closer to $O(n)$ \cite{Tretyakov}. However, if the size of the set increases over time, the algorithm might not be feasible in practice for certain applications.
+
+The $k$-NN classifier is widely applicable in general classification problems, partially because it is one of so called \textit{universally consistent} rules. Consider the training set $s_n$ of $n$ samples, and let use denote the $k$-NN classifier over that set as $f_{s_n}$. Similar to Bayesian classifier, we can determine the average risk $R(f_{s_n})$ of the classifier. The risk value is always greater than or equal than the Bayesian risk $R_*$ (recall that Bayesian classifier is optimal in this sense), however for large values of $n$ $R(f_{s_n})$ will be close to $R_*$.
+
+\begin{definition}
+	A classification rule is called consistent if the expectation of the average risk $E(R_n)$ converges to the optimal (Bayesian) risk $R_*$ as $n$ goes to infinity:
+	$$E(R_n) \xrightarrow[n \rightarrow \infty]{} R_*$$.
+	The classification rule is called universally consistent if it is consistent for any distribution of $(x, c)$.
+\end{definition}
+
+\begin{theorem}[Stone, 1977]
+	If $k \rightarrow \infty$ and $\frac{k}{n} \rightarrow 0$, then $k$-NN classification rule is universally consistent.
+\end{theorem}
+
+Consistency of $k$-NN rule allows to increase the quality by increasing the size of the training set. Stone theorem guarantees that as the size of the training set increases with constant value of $k$, the selection of messages for the training set does not matter. In addition to this, small values of $k$ prevent quadratic complexity $O(n^2)$ when computing nearest neighbors.
+
+Despite theoretical results, $k$-NN classifiers are performing worse than competition in practice in spam classification and are computationally expensive.
 
 \newpage
 
 \section{Artificial Neural Network Classifier}
 
-Words.
+Words, formulas.
 
 \newpage
 
 \section{SVM Classifier}
 
-Words.
+Words, formulas.
 
 \newpage
 
 \section{Boosting}
 
-Words.
+Words, formulas.
 
 \newpage
 
 
 \chapter{Advanced Approaches}
 
+\section{Less Naive Bayesian Classifier}
+
+Words, formulas.
+
+\newpage
+
 \section{Combined Boosting}
 
-Words.
+Words, formulas.
 
 \newpage
 
 \section{Adaptive Feature Selection}
 
-Words.
+Words, formulas.
+
+\newpage
+
+
+\chapter{Performance Comparison in Practice}
+
+Words, tables, graphs, pictures, code.
 
 \newpage
 

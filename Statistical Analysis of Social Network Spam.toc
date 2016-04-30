@@ -1,16 +1,18 @@
 \select@language {english}
 \contentsline {chapter}{Introduction}{3}
-\contentsline {chapter}{\numberline {1}Statement of the Problem}{4}
-\contentsline {section}{\numberline {1.1}Scope and Applications}{4}
-\contentsline {section}{\numberline {1.2}Feature Selection}{6}
-\contentsline {chapter}{\numberline {2}Basic Methods}{7}
-\contentsline {section}{\numberline {2.1}Naive Bayes Classifier}{7}
-\contentsline {section}{\numberline {2.2}k Nearest Neighbors Classifier}{11}
-\contentsline {section}{\numberline {2.3}Artificial Neural Network Classifier}{12}
-\contentsline {section}{\numberline {2.4}SVM Classifier}{13}
-\contentsline {section}{\numberline {2.5}Boosting}{14}
-\contentsline {chapter}{\numberline {3}Advanced Approaches}{15}
-\contentsline {section}{\numberline {3.1}Combined Boosting}{15}
-\contentsline {section}{\numberline {3.2}Adaptive Feature Selection}{16}
-\contentsline {chapter}{Conclusion}{17}
-\contentsline {chapter}{References}{18}
+\contentsline {chapter}{\numberline {1}Statement of the Problem}{5}
+\contentsline {section}{\numberline {1.1}Scope and Applications}{5}
+\contentsline {section}{\numberline {1.2}Feature Selection}{7}
+\contentsline {chapter}{\numberline {2}Basic Methods}{8}
+\contentsline {section}{\numberline {2.1}Naive Bayes Classifier}{8}
+\contentsline {section}{\numberline {2.2}k Nearest Neighbors Classifier}{12}
+\contentsline {section}{\numberline {2.3}Artificial Neural Network Classifier}{14}
+\contentsline {section}{\numberline {2.4}SVM Classifier}{15}
+\contentsline {section}{\numberline {2.5}Boosting}{16}
+\contentsline {chapter}{\numberline {3}Advanced Approaches}{17}
+\contentsline {section}{\numberline {3.1}Less Naive Bayesian Classifier}{17}
+\contentsline {section}{\numberline {3.2}Combined Boosting}{18}
+\contentsline {section}{\numberline {3.3}Adaptive Feature Selection}{19}
+\contentsline {chapter}{\numberline {4}Performance Comparison in Practice}{20}
+\contentsline {chapter}{Conclusion}{21}
+\contentsline {chapter}{References}{22}
