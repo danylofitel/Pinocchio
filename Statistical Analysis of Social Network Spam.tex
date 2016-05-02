@@ -320,7 +320,55 @@ Because of the above reasons and due to the large number of parameters that requ
 
 \section{SVM Classifier}
 
-Words, formulas.
+Support Vector Machines (SVM) is a class of widely used algorithms for classification and regression developed by V. Vapnik. The theoretical foundation of SVM is the Statistical Learning Theory that gives certain guarantees of performance. Let us consider classification problem with SVM for linearly separable data.
+
+SVM works in a similar manner to perceptron in terms of finding a linear boundary that separates test data according to their classes. However, the purpose of SVM is not to find any of these boundaries if they exist, but to find the maximal margin separating hyperplane, for which the distance to the closest training sample is maximal.
+
+\begin{definition}
+	Let $X = \{(x_i, c_i)\}$, $x_i \in \re^n$, $c_i \in \{-1, +1\}$ be the set of training samples. Suppose $(w, b)$ is a separating hyperplane $sign(w^T x_i + b) = c_i$ for all $1 \leq i \leq k$. The margin $m_i$ of a training sample $(x_i, c_i)$ with respect to the separating hyperplane is the distance from $x_i$ to the hyperplane
+	
+	$$m_i = \dfrac{|w^T x_i + b|}{||w||}$$.
+	
+	The margin $m$ of the separating hyperplane for training set $X$ is the smallest margin of an instance in the training set
+	
+	$$m = \min_i m_i$$.
+	
+	The maximal margin separating hyperplane for training set $X$ is the separating hyperplane with maximal margin with respect to the training set \cite{Tretyakov}.
+\end{definition}
+
+Because the hyperplane given by parameters $(x, b)$ is the same as the hyperplane given by parameters $(kx, kb)$, we can safely bound our search by only considering canonical hyperplanes for which $\min_i |w^T x_i + b| = 1$. It is possible to show that the optimal canonical hyperplane has minimal $||w||$, and that in order to find a canonical hyperplane it suffices to solve the minimization problem: minimize $\frac{1}{2} w^T w$ under conditions
+
+$$c_i(w^T x_i + b) \ge 1, i = 1, 2, \dots, k$$
+
+The problem may be transformed to a certain dual form: maximize
+
+$$L_d(\alpha) = \sum_{i = 1}^{k} \alpha_i - \frac{1}{2} \sum_{i, j = 1}^{k} \alpha_i \alpha_j c_i c_j x_i^T x_j$$
+
+with respect to dual variables $\alpha = (\alpha_1, \alpha_2, \dots, \alpha_k)$, $\alpha_i \ge 0 \forall i$ and $\sum_{i = 1}^{k} \alpha_i c_i = 0$.
+
+This is a classical quadratic optimization problem. It mostly has a guaranteed unique solution, and there are efficient algorithms for finding this solution. Once we have found the solution $\alpha$, the parameters $(w_o, b_o)$ of the optimal hyperplane are determined as
+
+$$w_o = \sum_{i = 1}^{k} \alpha_i c_i x_i$$,
+
+$$b_o = \frac{1}{c_m} - w_o^T x_k$$
+
+where $m$ is an arbitrary index for which $\alpha_m \ne 0$.
+
+It is more-or-less clear that the resulting hyperplane is completely defined by the training samples that are at minimal distance to it. These training samples are called support vectors and thus give the name to the method. It is possible to tune the amount of false positives produced by an SVM classifier, by using the so-called soft margin hyperplane and there are also lots of other modifications related to SVM learning. Recall the training and classification process.
+
+\textbf{Training process}
+
+\begin{enumerate}
+	\item Find $\alpha$ that solves the dual problem (maximizes $L_d$ under named
+	constraints).
+	\item Determine $w$ and $b$ for the optimal hyperplane and store the values.
+\end{enumerate}
+
+\textbf{Classification process}
+
+\begin{enumerate}
+	\item For message with feature vector $x$ classify it as $sign(w^T x + b)$.
+\end{enumerate}
 
 \newpage
 
@@ -331,9 +379,9 @@ Words, formulas.
 \newpage
 
 
-\chapter{Advanced Approaches}
+\chapter{Modified Methods}
 
-\section{Less Naive Bayesian Classifier}
+\section{Non-Naive Bayesian Classifier}
 
 Words, formulas.
 
