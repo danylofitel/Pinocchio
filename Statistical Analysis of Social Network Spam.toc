@@ -5,14 +5,14 @@
 \contentsline {section}{\numberline {1.2}Feature Selection}{7}
 \contentsline {chapter}{\numberline {2}Basic Methods}{8}
 \contentsline {section}{\numberline {2.1}Naive Bayes Classifier}{8}
-\contentsline {section}{\numberline {2.2}k Nearest Neighbors Classifier}{12}
-\contentsline {section}{\numberline {2.3}Artificial Neural Network Classifier}{14}
-\contentsline {section}{\numberline {2.4}SVM Classifier}{17}
-\contentsline {section}{\numberline {2.5}Boosting}{19}
-\contentsline {chapter}{\numberline {3}Modified Methods}{20}
-\contentsline {section}{\numberline {3.1}Non-Naive Bayesian Classifier}{20}
-\contentsline {section}{\numberline {3.2}Combined Boosting}{21}
-\contentsline {section}{\numberline {3.3}Adaptive Feature Selection}{22}
-\contentsline {chapter}{\numberline {4}Performance Comparison in Practice}{23}
-\contentsline {chapter}{Conclusion}{24}
-\contentsline {chapter}{References}{25}
+\contentsline {section}{\numberline {2.2}k Nearest Neighbors Classifier}{13}
+\contentsline {section}{\numberline {2.3}Artificial Neural Network Classifier}{15}
+\contentsline {section}{\numberline {2.4}SVM Classifier}{18}
+\contentsline {section}{\numberline {2.5}Boosting}{20}
+\contentsline {chapter}{\numberline {3}Modified Methods}{21}
+\contentsline {section}{\numberline {3.1}Non-Naive Bayesian Classifier}{21}
+\contentsline {section}{\numberline {3.2}Combined Boosting}{23}
+\contentsline {section}{\numberline {3.3}Adaptive Feature Selection}{24}
+\contentsline {chapter}{\numberline {4}Performance Comparison in Practice}{25}
+\contentsline {chapter}{Conclusion}{26}
+\contentsline {chapter}{References}{27}

@@ -116,9 +116,7 @@ Consider the simple case of text classification based on the presence or absence
 
 Suppose we have two classes $L$ and $S$ corresponding to legitimate and spam messages, and that there is a known probability distribution of feature vectors $P(x | c), c \in \{L, S\}$. In general it is hard to define such distribution, but it is often possible to provide an approximation. What we need to obtain is the class that the given message belongs to, or the probability $P(c | x)$. This can be done using the Bayes' formula
 
-\begin{center}
-	$P(c | x) = \dfrac{P(x | c) P(c)}{P(x)} = \dfrac{P(x | c) P(c)}{P(x | L) P(L) + P(x | S) P(S)}$.
-\end{center}
+$$P(c | x) = \dfrac{P(x | c) P(c)}{P(x)} = \dfrac{P(x | c) P(c)}{P(x | L) P(L) + P(x | S) P(S)}$$.
 
 where $P(x)$ is the a-priori probability of a message with feature vector $x$ and $P(c)$ is the probability of class $c$, i.e. the probability that any given message belongs to $c$. Given the values $P(c)$ and $P(x | c)$ for $c \in \{L, S\}$ one can calculate the probability $P(c | x)$ which can then be used in a classification rule.
 
@@ -158,9 +156,7 @@ Now we can define a natural classification rule in terms of expected risk.
 
 It can be shown that Bayesian classifier $f$ minimizes the average risk
 
-\begin{center}
-	$R(f) = \int \Loss(c, f(x)) dP(c, x) = P(L) \int \Loss(L, f(x))dP(x | L) + P(S) \int \Loss(S, f(x))dP(x | S)$
-\end{center}
+$$R(f) = \int \Loss(c, f(x)) dP(c, x) = P(L) \int \Loss(L, f(x))dP(x | L) + P(S) \int \Loss(S, f(x))dP(x | S)$$
 
 so in this sense Bayesian classifier already is optimal \cite{Tretyakov}.
 
@@ -198,9 +194,8 @@ The problem with this approach is that it requires calculation and storing of al
 
 Because of independence of features:
 
-\begin{center}
-	$P(x | c) = \prod_{i=1}^{n}P(x_i | c)$, $\Lambda(x) = \prod_{i=1}^{n}\Lambda_i(x_i)$
-\end{center}
+$$P(x | c) = \prod_{i=1}^{n}P(x_i | c)$$
+$$\Lambda(x) = \prod_{i=1}^{n}\Lambda_i(x_i)$$
 
 This classifier is known as Naive Bayesian Classifier due to assumption of independence of features. Training and classification are very simple computationally.
 
@@ -373,7 +368,7 @@ It is more-or-less clear that the resulting hyperplane is completely defined by 
 
 \section{Boosting}
 
-Words, formulas.
+AdaBoost.
 
 \newpage
 
@@ -383,6 +378,36 @@ Words, formulas.
 \section{Non-Naive Bayesian Classifier}
 
 Recall the naive Bayesian classifier described earlier. Let us ignore feature selection for now and instead only consider classification of feature vectors. Bayesian classifier is optimal in the sense of minimization of expected risk, however it is a common practice to assume that individual components of the feature vector are independent. Such assumption does compromise the optimality of the classifier, but also significantly simplifies implementation and improves performance. In this chapter we will analyze the possibility of an effective Bayesian classifier without this assumption and will develop an algorithm that allows to balance learning/classification speed with optimality guarantees.
+
+Let us return to Bayesian model for the case of a single feature.
+
+\textbf{Training process}
+
+\begin{enumerate}
+	\item Calculate probabilities $P(c)$, $P(x_w = 0 | c), P(x_w = 1 | c), c \in \{L, S\}$.
+	\item Using Bayes's formula calculate $P(c | x_w = 0)$ and $P(c | x_w = 1)$.
+	\item Calculate $\Lambda(x_w), x_w = 0, 1$, calculate $\lambda \dfrac{P(L)}{P(S)}$ and store these values.
+\end{enumerate}
+
+\textbf{Classification process}
+
+\begin{enumerate}
+	\item Determine feature vector $x_w$ for message $m$.
+	\item Retrieve the stored value $\Lambda(x_w)$.
+	\item Use Bayes's decision rule to determine class of the message.
+\end{enumerate}
+
+In the naive version assumption about independence of features was made. With this assumption the required probability can be easily found from a-priori probabilities of separate features:
+
+$$P(x | c) = \prod_{i=1}^{n}P(x_i | c)$$
+
+Now we again need to generalize this classifier to include multiple features, however this time without making any assumptions about the underlying distribution. Let us ignore the feature selection for now as it will be described in the following chapter.
+
+Consider the feature vector $x = (x_1, x_2, \dots, x_n), x_i = $, $x_i = 1$ if the message contains $w_i$, $x_i = 0$ otherwise. As mentioned before, calculating the value for all $2^n$ possible values of $x$ is not feasible. However, note that we can express this probability in terms of conditional probabilities using the chain rule:
+
+$$P(x | c) = P(x_1 | x_2, x_3, \dots, x_n, c) * P(x_2 | x_3, x_4, \dots, x_n, c) * \dots * P(x_n | c) = \prod_{i=1}^{n}P(x_i | \bigcap_{j = i + 1}^{n} x_j, c)$$
+
+Computing all probabilities in the product above is not feasible either as it will lead to the same exponential complexity of the algorithm. However, we can still improve the classifier precision compared to naive version by calculating conditional probabilities for some of the features while using a priori values for the rest. The next step is to determine the features a posteriori probabilities of which differ most from a priori values.
 
 \newpage
 
