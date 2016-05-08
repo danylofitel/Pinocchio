@@ -68,7 +68,7 @@ A basic task in sentiment analysis is classifying the polarity of a given text a
 
 Existing approaches to sentiment analysis can be grouped into three main categories: knowledge-based techniques, statistical methods, and hybrid approaches. Knowledge-based techniques classify text by affect categories based on the presence of unambiguous affect words such as happy, sad, afraid, and bored. Some knowledge bases not only list obvious affect words, but also assign arbitrary words a probable "affinity" to particular emotions. Statistical methods leverage on elements from machine learning such as latent semantic analysis, support vector machines, "bag of words" and Semantic Orientation - Pointwise Mutual Information.
 
-In this paper I consider using text analysis and statistical methods to perform sentiment analysis of the data refered to specific domain. I leverage different common approaches and suggest improvements to them for solving the particular problem I work on. Moreover, I analyze some of the common problems like feature vector selection.Finally, I provide a performance comparison of the detailed algorithms in practice.
+In this paper I consider using text analysis and statistical methods to perform sentiment analysis of the data refered to specific domain. I leverage different common approaches and suggest improvements to them for solving the particular problem I work on. Moreover, I analyze some of the common problems like feature vector selection. Finally, I provide a performance comparison of the detailed algorithms in practice.
 
 \newpage
 
@@ -83,39 +83,45 @@ After a particular campaign is finished, the business is interested in aggregati
 
 In general, the problem of sentiment analysis depends heavily on the application's domain and can benefit from additional metadata available along with the text data. For example, in case of reviews related to political domain, the analyst might expect some amount of sarcasm and indirect implications. Moreover, a language which is used also plays important role; similar expressions in different languages have different shades of meaning. Therefore, it often is beneficial to target a specific domain and a specific language in text sentiment analysis problem.
 
-In this paper I am going to target customer reviews of baby products in English available on amazon, the biggest retailer in the world, at $https://s3.amazonaws.com/static.dato.com/files/coursera/course-3/amazon\_baby.csv.zip$.
-This data contains a huge list (TODO NUMBER) of pairs text-polarity. The polarity grade is 1-5. 1 - means the most negative review and 5 - the most positive.
+In this paper I am going to target customer reviews of baby products in English available on amazon website, the biggest retailer in the world. The data is available at https://s3.amazonaws.com/static.dato.com/files/coursera/course-3/amazon\_baby.csv.zip.
+This data contains 183532 labeled products reviews. The polarity grade is 1-5. 1 - means the most negative review and 5 - the most positive.
+
+\newpage
 
 \section{Definitions}
 
-TODO complete the description
+Let us denote a set of all possible words $W$ and a set of all possible permutations G.
+And let $R$ be a set of all the reviews available. So $r \in R$ - product review.
+$R = \{(w, g): w \in W, g \in G\}$.
+$P$ - review polarities set. Each review has corresponding polarity $p=\{1,2,3,4,5\}, p \in P$.
+$|R| = |P| = m$.
 
-Let us denote the set of all possible words $W$.
-And let $R$ be the set of all the reviews.
-$r \in R$ - product review.
-$w$ is a word in a review.
-$w \subseteq W$
+$X$ feature matrix for machine learning. $X$ is an $m\times n$ matrix, where $m$ is a number of training samples and $n$ is a feature vector cardinality.
 
+$Y$ - label vector for machine learning. In this case it is a mapped polarity of a review. $Y=\{-1,1\}$, where -1 correspond to negative opinion and 1 - to the positive. $|Y| = m$.
 
-And let $R \subseteq Data$ be the set of all the reviews.
+$X_{train} \subseteq X$ - training data.
 
-$X$ feature matrix for machine learning.
+$X_{test} \subseteq X$ - test data.
 
-$Y$ - label vector for machine learning. In this case it is polarity of a review. Either 0 - negative or 1 - positive.
+$Y_{train} \subseteq Y$ - training labels.
 
-$X_{train}$ - training data.
-$X_{test}$ - test data.
-$Y_{train}$ - training labels.
-$Y_{test}$ - test labels.
+$Y_{test} \subseteq Y$ - test labels.
 
-$extr: R \rightarrow X$
-$f: X \rightarrow Y$
+$extr: R \rightarrow X$ - feature extraction function. Given a review $r$, this functions maps it to the feature vector $x$.
 
-The ultimate goal is to obtain a decision function $F : R \rightarrow \{extr, f\}$ that would minimize $\|f(x) - y\|$ for training data.
+$pol: P \rightarrow Y$ - polarity map function. Maps polarity to binary vector. 
 
-After feature extraction process we should be able to form a feature matrix X.
+$f: X \rightarrow Y$ - classification function. Given a feature vector $x$, this function predicts its label $y$.
 
-I shall split the date on training and cross-validation set. Or in other words training and test data.
+Now text analysis process can be defined. The sets $R$ and $P$ are available.
+Firstly, an extraction function $extr$ must be defined. After feature extraction process we should be able to form a feature matrix $X$. Also the representation of the polarities set $P$ is changed by applying a map function $pol$. Hence, $X$ and $Y$ are defined.
+
+At this moment, I shall split the data into training and cross-validation set. Or in other words training and test data. Now $f$ must be found by a classification algorithm on the training set.
+
+The ultimate goal is to obtain a decision function $F : R \rightarrow \{extr, f\}$ that would minimize $\dfrac1 {m_{test}} \sum_{i=1}^{m_{test}} (f(x_{i})- y_{i})^2$ for training data. 
+
+TODO precission and recall
 
 \newpage
 
@@ -123,29 +129,30 @@ I shall split the date on training and cross-validation set. Or in other words t
 
 \section{Motivation}
 
-Consider the simple case of text classification based on the presence or absence of just one word $W$. Suppose we know that the word $W$ only occurs is spam messages. This gives us confidence that any message containing $W$ is spam. This approach can be generalized to the probability of a message feature vector occurring in the message.
+Consider the simple case of text classification based on the presence or absence of just one word $w \in W$. Suppose we know that the word $w$ only occurs is reviews with negative opinion and never is present in reviews with positive opinion. This gives us confidence that any message containing $w$ is negative. This approach can be generalized to the probability of a message feature vector occurring in the message.
 
 The entities, I need to classify, are text messages that are given in the form of strings. Raw strings are not convenient objects to handle by classifiers. Most machine learning algorithms can only classify numerical objects or otherwise require a distance metric or other measure of similarity between the objects. Moreover, string by itself doesn't represent a polarity of the message in any way. Therefore, set of features should be extracted.
 
-Before proceeding with machine learning we have to convert all messages to numerical vectors called \textit{feature vectors}, and then classify these vectors. The simplest example of a feature vector is the vector of the numbers of occurrences of all the words in the dictionary in a message. The problem wih this approach is that not all the words affect a sentiment. In particular there are so-called STOP words which are completely useless in this respect. This causes significant performance degradation. Additionaly, this approach does not analyze the context of the word, which causes prediction precission degradation.
+Before proceeding with machine learning we have to convert all messages to numerical vectors called \textit{feature vectors}, and then classify these vectors. The simplest example of a feature vector is the vector of the numbers of occurrences of all the words in the dictionary in a message. The problem wih this approach is that not all the words affect a sentiment. In particular there are so-called STOP words which are completely useless in this respect. This causes significant performance degradation. Additionaly, this approach does not analyze the context of the word, which causes prediction precission to be lower.
 
-Extraction of features usually means that some information from the original message is lost. On the other hand, the way feature vector is chosen is crucial for the performance of the filter. If the features are chosen so that there may exist a spam message and a legitimate mail with the same feature vector, then any machine learning algorithm will make mistakes no matter how good it is. A wise choice of features will make classification much easier while also fast. In most practical applications the most basic vector of word frequencies or its modification is used.
+Extraction of features usually means that some information from the original message is lost. On the other hand, the way feature vector is chosen is crucial for the performance of the filter. There is a trade-off between prediction quality and training speed. Usually, the difference between performance of a really detailed model and a reasonably simple model is not significant. Yet the training speed of a simple model is considerably swifter. Therefore, in most practical applications the most basic vector of word frequencies or its modification is used.
 
-Note that at the stage of feature selection it is possible to include the features from the available metadata along with features from message text. In practice, however, it is much more important what features are chosen for classification than what classification algorithm is used.
-
-Now let us consider those machine learning algorithms that require distance metric or scalar product to be defined on the set of messages. There does exist a suitable metric (edit distance), and there is a nice scalar product defined purely for strings [2], but the complexity of the calculation of these functions is sometimes too restrictive to use them in practice. So in this work we shall simply extract the feature vectors and use the distance/scalar product of these vectors.
+There are plethora of machine learning algorithms which are suitable for review classification task. Choosing the best algorithm may improve a quality of prediction. In practice, however, it is much more important what features are chosen for classification than what classification algorithm is used. If the features are chosen badly, then any machine learning algorithm will fail to classify data correctly no matter how good it is. A reasonable choise of features can make classification both precise and quick.
 
 \newpage
 
 \section{Important Words Selection}
 
-Bla bla bla
+As already was mentioned in the previous section, selecting all the words as features is not very practical. Yet in performance comparison I will use this approach as well because it can be a baseline for other extraction functions quality. In case of using all the words let us define a word dicionary $D \subseteq W$. Let us suppose $|D| = k|$. Then for matrix $X$ which is $m \times n$ dimensional, now $n = k$. Now $x_{ij} \in X$ represents number of occurances of the word $d_j \in D$ in the review $r_i \in R$.
+
+Now let us consider extracting a smaller dictionary. The problem is to decide which words to include not to lose important features. As it turns out adjectives used most often define an opinion. There is almost no use in adverbs, because of a domain. It is possible that in restaurant reviews there are lots of them, yet for baby products it is not.  Also I am going to use link verbs. Common link verbs are: be, appear, look, seem, become, get. For instance, in the sentence "My baby seemed happy". Another reasonable idea is including some verbs such as love, like, enjoy, recommend, etc.
+
 
 \newpage
 
 \section{Context Mining}
 
-Bla bla bla
+In the previous section I described in detail the process of words selection. However, before begining classification there is still a work to be done. Consider the following example: "My baby likes this toy", "My baby doesn't like this toy". Using our previous approach there is no difference between those two sentences in classification matrix. But obviously there is a significant difference - pollarity is exactly the opposite. One solution would be to include "not" in the dictionary and hope that classifier will give it significant negative wage. The issue with this approach though is that in more complex reviews, a negation can bear positive sense. Consider an example "I really like this cradle. It looks nice and my baby does not cry as often as before". Therefore, another solution should be found. I suggest using antonyms.
 
 \newpage
 
@@ -153,41 +160,24 @@ Bla bla bla
 
 \section{k Nearest Neighbors Classifier}
 
-$k$ Nearest Neighbors (or $k$-NN) is a modification of the classical Nearest Neighbors algorithm. The idea behind this classifier is to first define a metric on feature vectors and then classify the message according to classes of $k$ nearest messages in the training set. The metric is often chosen to be Euclidean, but Hamming or $l_p$ can also be used for this purpose.
+$k$ Nearest Neighbors (KNN) is part of supervised learning that has been used in many applications in the field of data mining, statistical pattern recognition, image processing and many others. The idea is to predict class for a given feature vector using so called majority voting. Suppose we want to predict label for a feature vector $x_i \in X_{test}$. Then we look on labels of $k$ training vectors which are "the closest" to $x_i$ and use the most frequent label as a prediction. To define "closeness" some distance metric is used. There are several options for distance functions.
 
-\textbf{Training process}
+A commonly used distance metric for continuous and discrete variables is Euclidean distance:
+$$ \sum_{i=1}^{n} (a_i - b_i)^2$$, where a,b - feature vectors. $a_i - b_i$ - vector difference.
 
-\begin{enumerate}
-        \item Store feature vectors of training messages in two sets $L$ and $S$.
-\end{enumerate}
+For discrete variables, such as for text search, another metric can be used, such as the overlap metric (or Hamming distance).
 
-\textbf{Classification process}
+The best choice of k depends upon the data; generally, larger values of k reduce the effect of noise on the classification, but make boundaries between classes less distinct. A good k can be selected by various heuristic techniques. In our case though I am going to use a fixed value.
 
-\begin{enumerate}
-	\item For message with feature vector $x$ determine $k$ nearest neighbors from messages in the training set. If there are more legitimate messages among them, classify $x$ as legitimate message, otherwise classify as spam.
-\end{enumerate}
+This alorithm does not require training step. Having sets $X_{train}$ and $Y_{train}$ and distance function $dist$ is enough for making predictions. On the other hand, the classification of test data takes time, because for every review without label, the whole training corpus must be processed to calculate distance. For one prediction expected time complexity is $O(m_{train} * n)$. Performing indexing on the training set can decrease the running closer to $O(n)$. However, indexing is a computationally heavy operation and in case data is updated often, this approach becomes infeasible. Moreover, precission of this classification algorithm is usually low compared to others. Another drawback of the basic "majority voting" classification occurs when the class distribution is skewed. That is, examples of a more frequent class tend to dominate the prediction of the new example, because they tend to be common among the k nearest neighbors due to their large number.
 
-Since the algorithm does not require any preprocessing of the training dataset, the training process is trivial. The classification process, however, requires calculation of distances to all messages in the training set, and for feature vectors of length $m$ the most trivial implementations take $O(mn)$ time for set of $n$ messages in case of Hamming or $l_p$ metrics. Performing indexing on the training set can decrease the running closer to $O(n)$ \cite{Tretyakov}. However, if the size of the set increases over time, the algorithm might not be feasible in practice for certain applications.
-
-The $k$-NN classifier is widely applicable in general classification problems, partially because it is one of so called \textit{universally consistent} rules. Consider the training set $s_n$ of $n$ samples, and let use denote the $k$-NN classifier over that set as $f_{s_n}$. Similar to Bayesian classifier, we can determine the average risk $R(f_{s_n})$ of the classifier. The risk value is always greater than or equal than the Bayesian risk $R_*$ (recall that Bayesian classifier is optimal in this sense), however for large values of $n$ $R(f_{s_n})$ will be close to $R_*$.
-
-\begin{definition}
-	A classification rule is called consistent if the expectation of the average risk $E(R_n)$ converges to the optimal (Bayesian) risk $R_*$ as $n$ goes to infinity:
-	$$E(R_n) \xrightarrow[n \rightarrow \infty]{} R_*$$.
-	The classification rule is called universally consistent if it is consistent for any distribution of $(x, c)$.
-\end{definition}
-
-\begin{theorem}[Stone, 1977]
-	If $k \rightarrow \infty$ and $\frac{k}{n} \rightarrow 0$, then $k$-NN classification rule is universally consistent.
-\end{theorem}
-
-Consistency of $k$-NN rule allows to increase the quality by increasing the size of the training set. Stone theorem guarantees that as the size of the training set increases with constant value of $k$, the selection of messages for the training set does not matter. In addition to this, small values of $k$ prevent quadratic complexity $O(n^2)$ when computing nearest neighbors.
-
-Despite theoretical results, $k$-NN classifiers are performing worse than competition in practice in spam classification and are computationally expensive.
+In practice KNN algorithm performs worse than other algorithms. Therefore KNN model is mostly used as a baseline to compare it with other models.
 
 \newpage
 
 \section{Naive Bayes Classifier}
+
+Naive Bayes algorithm is a classification algorithm based on Bayes??? theorems, and can be used for both exploratory and predictive modeling. The word na??ve in the name Na??ve Bayes derives from the fact that the algorithm uses Bayesian techniques but does not take into account dependencies that may exist. This algorithm is less computationally intense than most other classification algorithms, and therefore is useful for quickly generating mining models to discover relationships between input columns and predictable columns.
 
 Consider the simple case of text classification based on the presence or absence of just one word $W$. Suppose we know that the word $W$ only occurs is spam messages. This gives us confidence that any message containing $W$ is spam. This approach can be generalized to the probability of a message feature vector occurring in the message.
 
