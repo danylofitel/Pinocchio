@@ -68,7 +68,7 @@ A basic task in sentiment analysis is classifying the polarity of a given text a
 
 Existing approaches to sentiment analysis can be grouped into three main categories: knowledge-based techniques, statistical methods, and hybrid approaches. Knowledge-based techniques classify text by affect categories based on the presence of unambiguous affect words such as happy, sad, afraid, and bored. Some knowledge bases not only list obvious affect words, but also assign arbitrary words a probable "affinity" to particular emotions. Statistical methods leverage on elements from machine learning such as latent semantic analysis, support vector machines, "bag of words" and Semantic Orientation - Pointwise Mutual Information.
 
-In this paper I consider using text analysis and statistical methods to perform sentiment analysis of the data refered to specific domain. I leverage different common approaches and suggest improvements to them for solving the particular problem I work on. Moreover, I analyze some of the common problems like feature vector selection.Finally, I provide a performance comparison of the detailed algorithms in practice.
+In this paper I consider using text analysis and statistical methods to perform sentiment analysis of the data refered to specific domain. I leverage different common approaches and suggest improvements to them for solving the particular problem I work on. Moreover, I analyze some of the common problems like feature vector selection. Finally, I provide a performance comparison of the detailed algorithms in practice.
 
 \newpage
 
@@ -83,39 +83,41 @@ After a particular campaign is finished, the business is interested in aggregati
 
 In general, the problem of sentiment analysis depends heavily on the application's domain and can benefit from additional metadata available along with the text data. For example, in case of reviews related to political domain, the analyst might expect some amount of sarcasm and indirect implications. Moreover, a language which is used also plays important role; similar expressions in different languages have different shades of meaning. Therefore, it often is beneficial to target a specific domain and a specific language in text sentiment analysis problem.
 
-In this paper I am going to target customer reviews of baby products in English available on amazon, the biggest retailer in the world, at $https://s3.amazonaws.com/static.dato.com/files/coursera/course-3/amazon\_baby.csv.zip$.
-This data contains a huge list (TODO NUMBER) of pairs text-polarity. The polarity grade is 1-5. 1 - means the most negative review and 5 - the most positive.
+In this paper I am going to target customer reviews of baby products in English available on amazon website, the biggest retailer in the world. The data is available at https://s3.amazonaws.com/static.dato.com/files/coursera/course-3/amazon\_baby.csv.zip.
+This data contains 183532 labeled products reviews. The polarity grade is 1-5. 1 - means the most negative review and 5 - the most positive.
 
 \section{Definitions}
 
-TODO complete the description
+Let us denote a set of all possible words $W$ and a set of all possible permutations G.
+And let $R$ be a set of all the reviews available. So $r \in R$ - product review.
+$R = \{(w, g): w \in W, g \in G\}$.
+$P$ - review polarities set. Each review has corresponding polarity $p=\{1,2,3,4,5\}, p \in P$.
+$|R| = |P| = m$.
 
-Let us denote the set of all possible words $W$.
-And let $R$ be the set of all the reviews.
-$r \in R$ - product review.
-$w$ is a word in a review.
-$w \subseteq W$
+$X$ feature matrix for machine learning. $X$ is an $m\times n$ matrix, where $m$ is a number of training samples and $n$ is a feature vector cardinality.
 
+$Y$ - label vector for machine learning. In this case it is a mapped polarity of a review. $Y=\{-1,1\}$, where -1 correspond to negative opinion and 1 - to the positive. $|Y| = m$.
 
-And let $R \subseteq Data$ be the set of all the reviews.
+$X_{train} \subseteq X$ - training data.
 
-$X$ feature matrix for machine learning.
+$X_{test} \subseteq X$ - test data.
 
-$Y$ - label vector for machine learning. In this case it is polarity of a review. Either 0 - negative or 1 - positive.
+$Y_{train} \subseteq Y$ - training labels.
 
-$X_{train}$ - training data.
-$X_{test}$ - test data.
-$Y_{train}$ - training labels.
-$Y_{test}$ - test labels.
+$Y_{test} \subseteq Y$ - test labels.
 
-$extr: R \rightarrow X$
-$f: X \rightarrow Y$
+$extr: R \rightarrow X$ - feature extraction function. Given a review $r$, this functions maps it to the feature vector $x$.
 
-The ultimate goal is to obtain a decision function $F : R \rightarrow \{extr, f\}$ that would minimize $\|f(x) - y\|$ for training data.
+$pol: P \rightarrow Y$ - polarity map function. Maps polarity to binary vector. 
 
-After feature extraction process we should be able to form a feature matrix X.
+$f: X \rightarrow Y$ - classification function. Given a feature vector $x$, this function predicts its label $y$.
 
-I shall split the date on training and cross-validation set. Or in other words training and test data.
+Now text analysis process can be defined. The sets $R$ and $P$ are available.
+Firstly, an extraction function $extr$ must be defined. After feature extraction process we should be able to form a feature matrix $X$. Also the representation of the polarities set $P$ is changed by applying a map function $pol$. Hence, $X$ and $Y$ are defined.
+
+At this moment, I shall split the data into training and cross-validation set. Or in other words training and test data. Now $f$ must be found by a classification algorithm on the training set.
+
+The ultimate goal is to obtain a decision function $F : R \rightarrow \{extr, f\}$ that would minimize $\dfrac1 {m_{test}} \sum_{i=1}^{m_{test}} (f(x_{i})- y_{i})^2$ for training data. 
 
 \newpage
 
