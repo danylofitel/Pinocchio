@@ -33,6 +33,7 @@
 \newcommand{\bb}[1]{{\bf #1}}
 \newcommand{\wsp}{\hspace{6pt}}
 \newcommand{\re}{\mathbb{R}}
+\newcommand{\nat}{\mathbb{N}}
 \newcommand{\Loss}{\mathcal{L}}
 
 \newtheorem{theorem}{Theorem}[section]
@@ -60,17 +61,17 @@
 \chapter*{Introduction}
 \addcontentsline{toc}{chapter}{Introduction}
 
-The problem of spam has been around since the early days of e-mail services and has since evolved to numerous forms. Spam can vary by platform (e-mail, instant messaging, social network messaging), by intention (from advertisement to phishing and ransom), by distribution targets (from a single individual or general public), etc.
+The problem of spam has been around since the early days of e-mail services and has since evolved to numerous forms. Spam can vary by platform (e-mail, instant messaging, social network messaging), by intentions (from advertisement to phishing and ransom), by distribution targets (from a single individual or general public), etc.
 
-While the number of messaging domains is growing rapidly, the prime purpose of spam remains the same: to reach out to the recipient by any means or to trick him into acting on the message by disguising it as a legitimate message. This leads to a very clear practical definition of spam from user's perspective as any unsolicited message, whether it acknowledges its origin (e.g. harmless advertisement) or is crafted to gain the user's trust (e.g. phishing and ransom attacks).
+While the number of messaging domains is growing rapidly, the prime purpose of spam remains the same: to reach out to the recipient by any means or to trick him into acting on the message by disguising it as a legitimate message. This leads to a very clear practical definition of spam from user's perspective as \textit{any unsolicited message}, whether it acknowledges its origin (e.g. advertisement) or is crafted to gain the user's trust (e.g. phishing and ransom attacks).
 
-Given the large number of messaging systems to which spam is applicable, the problem of detection of unwanted correspondence has evolved along with distribution methods and now includes additional metadata like attached media and hyperlinks. While they may seem to increase the complexity of spam detection, they actually give a basis for additional means of filtering which are often much easier to perform than the raw text classification.
+Given the large number of messaging systems to which spam is applicable, the problem of detection of unwanted correspondence has evolved along with distribution methods and now includes additional metadata like attached media and hyperlinks. While they may seem to increase the complexity of spam detection, they in fact give a basis for additional means of filtering which are often much easier to perform than the raw text classification.
 
-For example, the vast majority of e-mail spam can be filtered out by simply checking the reputation of the sender's IP address and embedded hyperlinks. On the other hand, while it is possible to embed the text into images, their content can be easily retrieved by the use of optical character recognition and then appended to the main text.
+While the message metadata can provide additional information, in practice text classification is inevitable. It is usually the final step in classification process as it tends to be most expensive. Since the metadata processing is different from case to case, it is safe to say that the general problem of spam filtering comes down to the problem of binary text classification. Therefore, it makes sense to develop universal methods for spam classification of text messages that can be later adopted to any domain.
 
-While the message metadata can provide additional information, in practice text classification is inevitable. It is usually the final step in classification process as it tends to be most expensive. Since the metadata processing is different from case to case, it is safe to say that the general problem of spam filtering comes down to the problem of binary text classification.
+In this paper we give an overview of a number of common statistical methods of performing spam filtering on text messages. In particular we focus on Bayesian classifier - one of the most common and effective approaches to spam filtering. We analyze existing approaches and develop a number of improvements that provide stronger theoretical results.
 
-Therefore, in this paper we consider a number of common statistical methods of performing spam filtering on text messages and suggest a number of improvements to a number of them. Additionally, we analyze some of the common problems like feature vector selection. Finally, we provide a performance comparison of the detailed algorithms in practice.
+Additionally, we analyze common problems for training on text messages like feature selection. Finally, we provide a performance comparison of the detailed algorithms in practice.
 
 \newpage
 
@@ -87,9 +88,21 @@ In general, the problem of spam detection depends heavily on the application's d
 
 This, of course, applies to all messaging services. Maximum effectiveness can not be achieved without using all available data in addition to the message text. However, in most cases text analysis is the second stage preceded by a domain-specific filter. Therefore, we can further focus on statistical classification of spam for text messages without specific constraints.
 
-Let us denote the set of all messages by $M$, and let $S \subseteq M$ be the set of spam messages and $L = M \setminus S$ be the set of legit messages. The ultimate goal is to obtain a decision function $f : M \rightarrow \{S, L\}$ that would determine whether a given message $m \in M$ is spam $(m \in S)$ or legitimate mail $(m \in L)$.
+Let us give a number of definitions that will be used throughout the paper.
 
-We shall look for this function by training a number of machine learning algorithms on a set of already classified messages $\{(m_1, c_1), (m_2, c_2), ..., (m_n, c_n)\}, m_i \in M, c_i \in \{S, L\}, 1 \leq i \leq n$. There are two aspects for the case of text messages: we have to extract features from text strings and we may have strict requirements for the precision of classifier.
+$M$ - the set of all messages.
+
+$L \in M$ - the set of legitimate messages.
+
+$S = m \setminus L$ - the set of spam messages.
+
+Note that we will often speak of $M$, $L$ and $S$ in context of the set of training messages.
+
+$f : M \rightarrow \{S, L\}$ - classification function that given a message determines its class. This function is the ultimate goal of any classification algorithm.
+
+$T = \{(m_1, c_1), (m_2, c_2), ..., (m_k, c_k)\}, m_i \in M, c_i \in \{S, L\}, 1 \leq i \leq k$ - the training set of already classified messages.
+
+$x = (x_1, x_2, \dots, x_n), x_i \in \{0, 1\}, 1 \leq i \leq n$ - binary feature vector of a message. Each coordinate specifies whether a specific feature applies to the message.
 
 \newpage
 
@@ -97,13 +110,13 @@ We shall look for this function by training a number of machine learning algorit
 
 The entities we need to classify are text messages that are given in the form of strings. Raw strings are not convenient objects to handle in this case. Most machine learning algorithms can only classify numerical objects or otherwise require a distance metric or other measure of similarity between the objects.
 
-Before proceeding with machine learning we have to convert all messages to numerical vectors called \textit{feature vectors}, and then classify these vectors. The simplest example of a feature vector is the vector of the numbers of occurrences of certain words in a message. 
+Before proceeding with machine learning we have to convert all messages to numerical vectors called \textit{feature vectors}, and then classify these vectors. The simplest example of a feature vector is the vector of the numbers of occurrences of certain words in a message or the vector of flags specifying whether each word occurs in the message or not.
 
-Extraction of features usually means that some information from the original message is lost. On the other hand, the way feature vector is chosen is crucial for the performance of the filter. If the features are chosen so that there may exist a spam message and a legitimate mail with the same feature vector, then any machine learning algorithm will make mistakes no matter how good it is. A wise choice of features will make classification much easier while also fast. In most practical applications the most basic vector of word frequencies or its modification is used.
+Extraction of features usually means that some information from the original message is lost. On the other hand, the way feature vector is chosen is crucial for the performance of the filter. If the features are chosen so that there may exist a spam message and a legitimate mail with the same feature vector, then any machine learning algorithm will make mistakes no matter how good it is.
 
-Note that at the stage of feature selection it is possible to include the features from the available metadata along with features from message text. In practice, however, it is much more important what features are chosen for classification than what classification algorithm is used.
+Even the ultimate feature vector containing frequencies of \textit{all} words in the message does not preserve semantical information. This problem however is out of scope and is in the domain of Natural Language Processing. In most practical applications the most basic vector of word frequencies or its modification is sufficient.
 
-Now let us consider those machine learning algorithms that require distance metric or scalar product to be defined on the set of messages. There does exist a suitable metric (edit distance), and there is a nice scalar product defined purely for strings [2], but the complexity of the calculation of these functions is sometimes too restrictive to use them in practice. So in this work we shall simply extract the feature vectors and use the distance/scalar product of these vectors.
+Note that at the stage of feature selection it is possible to include the features from the available metadata along with features from message text. However, we will only focus on plain text as any of the described algorithms can be easily expanded to include more features.
 
 \newpage
 
@@ -140,8 +153,6 @@ This approach can be too simplistic for certain applications. For example, in ca
 	A cost function $\Loss(c_1, c_2)$ denotes the cost of misclassifying a message of class $c_1$ as the one belonging to class $c_2$.
 \end{definition}
 
-It is natural to put $\Loss(L, L) = \Loss(S, S) = 0$, but in general it might not be the case.
-
 Then we can express the expected risk of classifying a message $x$ belonging to class $c$ in the above terms.
 
 \begin{definition}
@@ -160,7 +171,7 @@ $$R(f) = \int \Loss(c, f(x)) dP(c, x) = P(L) \int \Loss(L, f(x))dP(x | L) + P(S)
 
 so in this sense Bayesian classifier already is optimal \cite{Tretyakov}.
 
-Naturally, the loss of classifying the message correctly is zero, thus $L(S, S) = L(L, L) = 0$. Then the Bayes's classification rule can be rewritten as
+Naturally, the loss of classifying the message correctly is zero, thus $\Loss(S, S) = \Loss(L, L) = 0$. Then the Bayes's classification rule can be rewritten as
 
 \begin{center}
 	If $\Lambda(x) > \lambda \dfrac{P(L)}{P(S)}$ classify as spam otherwise as legitimate message.
@@ -373,9 +384,11 @@ AdaBoost.
 \newpage
 
 
-\chapter{Modified Methods}
+\chapter{Modified Bayesian Classifier}
 
-\section{Non-Naive Bayesian Classifier}
+\section{Non-Naive Bayesian Classification}
+
+\subsection{Overview}
 
 Recall the naive Bayesian classifier described earlier. Let us ignore feature selection for now and instead only consider classification of feature vectors. Bayesian classifier is optimal in the sense of minimization of expected risk, however it is a common practice to assume that individual components of the feature vector are independent. Such assumption, while significantly simplifying implementation and improving training and classification performance, does compromise the optimality of the classifier. In this chapter we will analyze the possibility of an effective Bayesian classifier without assumption about feature independence and will develop an algorithm that allows to balance learning/classification speed with optimality guarantees.
 
@@ -407,7 +420,7 @@ Consider the feature vector $x = (x_1, x_2, \dots, x_n)$, $x_i = 1$ if the messa
 
 The probability $P(x | c)$ for any given $c \in \{L, S\}$ is equal to the ratio of messages in $c$ with feature vector $x$ to all messages in $c$. To calculate it efficiently, we need to be able to quickly determine the number of messages in the set that have specified feature vectors. This can be done in a number of ways.
 
-\textbf{Feature Trie}
+\subsection{Feature Trie}
 
 To be able to perform lookup of the number of messages with specific feature vector, we shall store the known feature vectors in a trie where each node corresponds to one of the features, starting from $x_1$. Given a node at position $x_i$ the left subtree will contain vectors with $x_i = 0$ and the right subtree - vectors with $x_i = 1$. The leaf nodes will contain the number of messages in the set with feature vectors that match the path from root to leaf. Since we need to calculate both $P(x | L)$ and $P(x | S)$, we shall maintain two tries, one for legitimate messages and one for spam.
 
@@ -417,17 +430,53 @@ Lookup of the feature vector also takes linear time $O(n)$ since we only follow 
 
 The amount of extra storage required by the trie is $O(nk)$ (consider the set of one message). Obviously, some fractions of the paths will be shared (different messages with identical feature vectors will share the whole path). One way to increase the number of shared nodes is to sort the features in descending order by the number of messages that have the same value of this feature, then more messages will share common beginning of the path.
 
-\textbf{Hash Table}
+Of course, this is not the only way to store and perform lookup on feature vectors. We can also use a hash table. Calculating hash of the feature vector is $O(n)$. Construction and lookup are $O(nk)$ and $O(n)$ on average respectively, however they can be $O(n^2k)$ and $O(n^2)$ in the worst case. For the purposes of this paper we will focus on trie approach.
 
-Of course, this is not the only way to store and perform lookup on feature vectors. We can also use a hash table. Construction and lookup are $O(nk)$ and $O(n)$ on average respectively, however they can be $O(n^2k)$ and $O(n^2)$ in the worst case. In this paper we will focus on trie approach.
+Let us outline the updated training and classification algorithms. Let $M(c, x), c \in \{L, S\}, x \in 2^{|n|}$ denote the power of subset of $c$ with feature vector $x$.
+
+\subsection{Updated Classification Algorithm}
+
+Let us now outline the updated algorithm for training and classification.
 
 \textbf{Training process}
 
-TODO.
+\begin{enumerate}
+	\item Calculate $|L|$ and $|S|$. Time complexity: $O(k)$.
+	\item Calculate likelihood ratio $\lambda \frac{P(L)}{P(S)}$. Time complexity: $O(1)$.
+	\item For both $L$ and $S$ construct corresponding tries that allow to perform lookup of $M(c, x)$. Time complexity: $O(nk)$. Space complexity: $O(nk)$.
+\end{enumerate}
 
-\textbf{Chain rule}
+\textbf{Classification process}
 
-Alternatively, we can express this probability in terms of conditional probabilities using the chain rule:
+\begin{enumerate}
+	\item Determine feature vector $x$ for message $m$. Time complexity: $O(|m|)$ where $|m|$ denotes the number of words in message $m$.
+	\item Perform lookup of $M(L, x)$ and $M(S, x)$ using the tries. Time complexity: $O(n)$.
+	\item Calculate $P(x | L) = \frac{M(L, x)}{|L|}$ and $P(x | S) = \frac{M(S, x)}{|S|}$. Calculate $\Lambda(x) = \frac{P(x | S)}{P(x | L)}$. Time complexity: $O(1)$.
+	\item Use Bayes's decision rule to determine class of the message. Time complexity: $O(1)$.
+\end{enumerate}
+
+\subsection{Generalizing Probability of Feature Vectors}
+
+In case of naive approach only probabilities of separate features need to be stored. They are sufficient to determine the overall probability of the feature vector for all $2^n$ combinations, regardless of whether they are present in the training set. In the approach described above, however, only the information about concrete feature vectors from the training set is stored. While it is possible to calculate probability of any feature vector in the training set by the algorithm above, in its current version probability of any feature vector that is not in the training is 0.
+
+This can be interpreted as excessive 'formality', i.e. the algorithm produces the optimal result, but in the context of given training set. We would naturally want to get a reasonable approximation of the probability of messages that are not present in the training set. Note that out of $2^n$ possible feature vectors at most $k$ will be present in the constructed trie, and the probability that the algorithm will produce the expected result is $\frac{k}{2^n}$ at worst. Therefore, providing an alternative probability for unrecognized feature vectors is essential.
+
+One possible way is to fall back to naive Bayesian classifier for all feature vectors that are not in the training set. In this case, our modified classifier will only produce different results for a small fraction of possible messages. However, if the number of features $n$ is small, i.e. of order $\log_2 k$, the probability of any feature vector to be in the training set will be $1 - (\frac{k-1}{k})^k$, which is close to $1$ for large training sets.
+
+The downside of small number of features is that only fraction of available information is used. In practice we want feature vectors to include as many words as possible. Therefore, we should provide a different approximation.
+
+\newpage
+
+
+\section{Semi-Naive Bayesian Classification}
+
+\subsection{Overview}
+
+At this point we have an optimal algorithm for any message such that its feature vector is present in the training set. In this section we will describe a number of ways to give an approximation of probabilities for all possible feature vectors.
+
+\subsection{Chain rule}
+
+We can express probability $P(x | c), c \in \{L, S\}$ in terms of conditional probabilities using the chain rule:
 
 \begin{center}
 	$P(x | c) = P(x_1 | c) P(x_2 | x_1, c) P(x_3 | x_1, x_2, c) \dots P(x_n | x_1, x_2, \dots, x_{n - 1}, c) = \prod_{i=1}^{n}P(x_i | \bigcap_{j = 1}^{i - 1} x_j, c)$
@@ -435,7 +484,7 @@ Alternatively, we can express this probability in terms of conditional probabili
 
 Let us first consider any of the probabilities $P(x_i | x_1, x_2, \dots, x_{i-1}, c)$ for given values of $x_1, \dots, x_{i - 1}$ and $c$. The constraint of $c$ limits the set of messages to either only legitimate messages or only spam. The constraints on the fist $i - 1$ features require the first $i - 1$ components of the feature vector to be equal to $(x_1, x_2, \dots, x_{n-1})$.
 
-Let $M(c, x_1, x_2, \dots, x_l), 1 \leq l \leq n$ denote the subset of training set of legitimate messages if $c = L$ or spam messages if $c = S$ with the first $l$ features equal to $x_1, x_2, \dots, x_l$. Then
+We will now extend the function $M$ from the previous section. Let $M(c, x_1, x_2, \dots, x_l), 1 \leq l \leq n$ denote the power of subset of $c$ with the first $l$ features equal to $x_1, x_2, \dots, x_l$. Then
 
 \begin{center}
 	$P(x_i | x_1, x_2, \dots, x_{i-1}, c) = \dfrac{|M(c, x_1, x_2, \dots, x_i)|}{|M(c, x_1, x_2, \dots, x_{i-1})|}$
@@ -445,9 +494,11 @@ Let $M(c, x_1, x_2, \dots, x_l), 1 \leq l \leq n$ denote the subset of training 
 	$P(x | c) = P(x_1 | c) P(x_2 | x_1, c) P(x_3 | x_1, x_2, c) \dots P(x_n | x_1, x_2, \dots, x_{n - 1}, c) = \prod_{i=1}^{n}P(x_i | \bigcap_{j = 1}^{i - 1} x_j, c)$
 \end{center}
 
-Computing and storing  probabilities of each component of the product is not possible since the number conditions grows exponentially. The number of combinations for $i$-th component is $2^{i}$, and the total number of probabilities that need to be stored is $\sum_{i=1}^{n} 2^i = 2^{i+1} - 1$. Therefore, these values have to be computed during classification process.
 
 \newpage
+
+
+\chapter{Other Modifications}
 
 \section{Combined Boosting}
 
