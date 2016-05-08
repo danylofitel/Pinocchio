@@ -377,7 +377,7 @@ AdaBoost.
 
 \section{Non-Naive Bayesian Classifier}
 
-Recall the naive Bayesian classifier described earlier. Let us ignore feature selection for now and instead only consider classification of feature vectors. Bayesian classifier is optimal in the sense of minimization of expected risk, however it is a common practice to assume that individual components of the feature vector are independent. Such assumption does compromise the optimality of the classifier, but also significantly simplifies implementation and improves performance. In this chapter we will analyze the possibility of an effective Bayesian classifier without this assumption and will develop an algorithm that allows to balance learning/classification speed with optimality guarantees.
+Recall the naive Bayesian classifier described earlier. Let us ignore feature selection for now and instead only consider classification of feature vectors. Bayesian classifier is optimal in the sense of minimization of expected risk, however it is a common practice to assume that individual components of the feature vector are independent. Such assumption, while significantly simplifying implementation and improving training and classification performance, does compromise the optimality of the classifier. In this chapter we will analyze the possibility of an effective Bayesian classifier without assumption about feature independence and will develop an algorithm that allows to balance learning/classification speed with optimality guarantees.
 
 Let us return to Bayesian model for the case of a single feature.
 
@@ -403,11 +403,49 @@ $$P(x | c) = \prod_{i=1}^{n}P(x_i | c)$$
 
 Now we again need to generalize this classifier to include multiple features, however this time without making any assumptions about the underlying distribution. Let us ignore the feature selection for now as it will be described in the following chapter.
 
-Consider the feature vector $x = (x_1, x_2, \dots, x_n), x_i = $, $x_i = 1$ if the message contains $w_i$, $x_i = 0$ otherwise. As mentioned before, calculating the value for all $2^n$ possible values of $x$ is not feasible. However, note that we can express this probability in terms of conditional probabilities using the chain rule:
+Consider the feature vector $x = (x_1, x_2, \dots, x_n)$, $x_i = 1$ if the message contains $w_i$, $x_i = 0$ otherwise. As mentioned before, calculating and storing this value for all $2^n$ possible combinations of feature vector $x$ is not feasible in practice, so this has to be done during classification process.
 
-$$P(x | c) = P(x_1 | x_2, x_3, \dots, x_n, c) * P(x_2 | x_3, x_4, \dots, x_n, c) * \dots * P(x_n | c) = \prod_{i=1}^{n}P(x_i | \bigcap_{j = i + 1}^{n} x_j, c)$$
+The probability $P(x | c)$ for any given $c \in \{L, S\}$ is equal to the ratio of messages in $c$ with feature vector $x$ to all messages in $c$. To calculate it efficiently, we need to be able to quickly determine the number of messages in the set that have specified feature vectors. This can be done in a number of ways.
 
-Computing all probabilities in the product above is not feasible either as it will lead to the same exponential complexity of the algorithm. However, we can still improve the classifier precision compared to naive version by calculating conditional probabilities for some of the features while using a priori values for the rest. The next step is to determine the features a posteriori probabilities of which differ most from a priori values.
+\textbf{Feature Trie}
+
+To be able to perform lookup of the number of messages with specific feature vector, we shall store the known feature vectors in a trie where each node corresponds to one of the features, starting from $x_1$. Given a node at position $x_i$ the left subtree will contain vectors with $x_i = 0$ and the right subtree - vectors with $x_i = 1$. The leaf nodes will contain the number of messages in the set with feature vectors that match the path from root to leaf. Since we need to calculate both $P(x | L)$ and $P(x | S)$, we shall maintain two tries, one for legitimate messages and one for spam.
+
+With this representation adding a message to the trie takes time $O(n)$ (where $n$ is the dimension of feature vector) since the length of the path from root to the corresponding leaf node is $n$. Therefore, the whole training process takes $O(nk)$, where $k$ is size of the training set.
+
+Lookup of the feature vector also takes linear time $O(n)$ since we only follow the path of length $n$ from root to a leaf node. It is also easy to show that the lower bound is $O(n)$ because each of the feature vectors has to be examined at least once. Therefore, our algorithm is optimal.
+
+The amount of extra storage required by the trie is $O(nk)$ (consider the set of one message). Obviously, some fractions of the paths will be shared (different messages with identical feature vectors will share the whole path). One way to increase the number of shared nodes is to sort the features in descending order by the number of messages that have the same value of this feature, then more messages will share common beginning of the path.
+
+\textbf{Hash Table}
+
+Of course, this is not the only way to store and perform lookup on feature vectors. We can also use a hash table. Construction and lookup are $O(nk)$ and $O(n)$ on average respectively, however they can be $O(n^2k)$ and $O(n^2)$ in the worst case. In this paper we will focus on trie approach.
+
+\textbf{Training process}
+
+TODO.
+
+\textbf{Chain rule}
+
+Alternatively, we can express this probability in terms of conditional probabilities using the chain rule:
+
+\begin{center}
+	$P(x | c) = P(x_1 | c) P(x_2 | x_1, c) P(x_3 | x_1, x_2, c) \dots P(x_n | x_1, x_2, \dots, x_{n - 1}, c) = \prod_{i=1}^{n}P(x_i | \bigcap_{j = 1}^{i - 1} x_j, c)$
+\end{center}
+
+Let us first consider any of the probabilities $P(x_i | x_1, x_2, \dots, x_{i-1}, c)$ for given values of $x_1, \dots, x_{i - 1}$ and $c$. The constraint of $c$ limits the set of messages to either only legitimate messages or only spam. The constraints on the fist $i - 1$ features require the first $i - 1$ components of the feature vector to be equal to $(x_1, x_2, \dots, x_{n-1})$.
+
+Let $M(c, x_1, x_2, \dots, x_l), 1 \leq l \leq n$ denote the subset of training set of legitimate messages if $c = L$ or spam messages if $c = S$ with the first $l$ features equal to $x_1, x_2, \dots, x_l$. Then
+
+\begin{center}
+	$P(x_i | x_1, x_2, \dots, x_{i-1}, c) = \dfrac{|M(c, x_1, x_2, \dots, x_i)|}{|M(c, x_1, x_2, \dots, x_{i-1})|}$
+\end{center}
+
+\begin{center}
+	$P(x | c) = P(x_1 | c) P(x_2 | x_1, c) P(x_3 | x_1, x_2, c) \dots P(x_n | x_1, x_2, \dots, x_{n - 1}, c) = \prod_{i=1}^{n}P(x_i | \bigcap_{j = 1}^{i - 1} x_j, c)$
+\end{center}
+
+Computing and storing  probabilities of each component of the product is not possible since the number conditions grows exponentially. The number of combinations for $i$-th component is $2^{i}$, and the total number of probabilities that need to be stored is $\sum_{i=1}^{n} 2^i = 2^{i+1} - 1$. Therefore, these values have to be computed during classification process.
 
 \newpage
 

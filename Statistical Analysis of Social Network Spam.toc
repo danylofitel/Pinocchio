@@ -11,8 +11,8 @@
 \contentsline {section}{\numberline {2.5}Boosting}{20}
 \contentsline {chapter}{\numberline {3}Modified Methods}{21}
 \contentsline {section}{\numberline {3.1}Non-Naive Bayesian Classifier}{21}
-\contentsline {section}{\numberline {3.2}Combined Boosting}{23}
-\contentsline {section}{\numberline {3.3}Adaptive Feature Selection}{24}
-\contentsline {chapter}{\numberline {4}Performance Comparison in Practice}{25}
-\contentsline {chapter}{Conclusion}{26}
-\contentsline {chapter}{References}{27}
+\contentsline {section}{\numberline {3.2}Combined Boosting}{25}
+\contentsline {section}{\numberline {3.3}Adaptive Feature Selection}{26}
+\contentsline {chapter}{\numberline {4}Performance Comparison in Practice}{27}
+\contentsline {chapter}{Conclusion}{28}
+\contentsline {chapter}{References}{29}
