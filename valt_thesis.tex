@@ -177,7 +177,71 @@ In practice KNN algorithm performs worse than other algorithms. Therefore KNN mo
 
 \section{Naive Bayes Classifier}
 
-Naive Bayes algorithm is a classification algorithm based on Bayes??? theorems, and can be used for both exploratory and predictive modeling. The word na??ve in the name Na??ve Bayes derives from the fact that the algorithm uses Bayesian techniques but does not take into account dependencies that may exist. This algorithm is less computationally intense than most other classification algorithms, and therefore is useful for quickly generating mining models to discover relationships between input columns and predictable columns.
+Naive Bayes algorithm is a classification algorithm based on Bayes' theorems, and can be used for both exploratory and predictive modeling. The word naive in the name Naive Bayes derives from the fact that the algorithm uses Bayesian techniques but does not take into account dependencies that may exist. This algorithm is less computationally intense than most other classification algorithms, and therefore is useful for quickly generating mining models to discover relationships between input columns and predictable columns.
+
+Naive Bayes relies on very simple representation of the document - Bag of words.
+
+Input:
+
+\begin{itemize}
+  \item A document $d$
+  \item A fixed set of classes $C=\{c1, c2,..., c_j\}$
+  \item A training set of $m$ hand-labeled documents $(d1, c1), (d2, c2),..., (d_m, c_m)$
+\end{itemize}
+
+Output: 
+\begin{itemize}
+  \item A learned classifier $y: d \rightarrow c$.
+\end{itemize}
+
+For a document $d$ and class $c$
+
+$$P(c | d) = \dfrac{P(d | c) P(c)}{P(d)}$$.
+
+This probability can be used to predict a class of a document.
+
+$$c_{best} = \arg\!\max_{c \in C} P(c | d) = \arg\!\max_{c \in C} \dfrac{P(d | c) P(c)}{P(d)} = \arg\!\max_{c \in C} {P(d | c) P(c)}$$
+
+Taking into account that d is a bag of words:
+
+$$c_{best} = \arg\!\max_{c \in C} {P(d | c) P(c)} = \arg\!\max_{c \in C} {P(w_1, w_2,..., w_n | c) P(c)}$$
+
+Now let us find the way to compute those two probailities. Let us start with $P(c)$. We can answer the question how often this class occurs. It can be computed by counting relative frequencies in a corpus.
+
+Computing $P(w_1, w_2,..., w_n | c)$ is more subtle. There is $|W|^n * |C|$ parameters to be computed, which is impossible in practice. In Naive Bayes classifier two simplifying assumptions are made:
+
+\begin{itemize}
+  \item \textbf{Bag of Words assumption:} Assume position does not matter
+  \item \textbf{Conditional Independence:} Assume the feature probabilities $P(x_i | c)$ are independent given a class c.
+\end{itemize}
+
+Despite these simplification in practice a problem can be solved with a high degree of accuracy. The result of the simplyfying assumptions is the following equation:
+$$P(w_1, w_2,..., w_n | c) = P(w_1 | c) \times P(w_2 | c) \times ... \times P(w_n | c)$$
+
+Therefore:
+$$c_{best} = \arg\!\max_{c \in C} {P(w_1, w_2,..., w_n | c) P(c)} = \arg\!\max_{c \in C} P(c) \prod_{w \in W} {P(w | c) }$$
+
+Now we have to find the way to compute these probabilities. The most natural way to implement this is simply to use frequencies in the data.
+
+$$P(w_i | c) = \dfrac{doccount(C=c)}{N_{doc}}$$
+
+$$P(c) = \dfrac{count(w_i, c)}{\sum_{w \in W} {count(w, c)}}$$
+
+So I am going to compute the fraction of times word $w_i$ appears among all words in documents of class $c$. To do that it is possible to concatenate all available documents of a particular class $c$ into one mega-document. In case of this paper there is two mega-docuemtns $D_{pos}$ and $D_{neg}$, which correspond to positive and negative reviews.
+
+Unfortunatelly, there is a problem with the approach described above. What should happen if we have seen no training example with the word \textbf{fantastic} and classified in the positive?
+$$P("fantastic" | positive) = \dfrac{count("fantastic", positive)}{\sum_{w \in W} {count(w, positive)}} = 0$$
+
+As can be seen, even though the word \textbf{fantastic} is usually associated with positive sentiment, the probability of a document which contains this word belongs to $D_{pos}$ is zero. Here is why:
+$$c_{best} = \arg\!\max_{c \in C} P(c) P("fantastic" | c) \prod_{w \in W/\{"fantastic"\}} {P(w | c) }$$
+
+For positive class this product is equal to zero.
+
+The solution to this problem is adding Laplace (add-1) smoothing for Naive Bayes. Simply one is added to each of the counts:
+
+$$P(w_i | c) = \dfrac{count(w_i, c) + 1}{(\sum_{w \in W} {(count(w, c) + 1)}} = \dfrac{count(w_i, c) + 1}{\sum_{w \in W} {count(w, c)}) + |W|}$$
+
+TODO
 
 Consider the simple case of text classification based on the presence or absence of just one word $W$. Suppose we know that the word $W$ only occurs is spam messages. This gives us confidence that any message containing $W$ is spam. This approach can be generalized to the probability of a message feature vector occurring in the message.
 
