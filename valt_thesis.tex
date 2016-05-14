@@ -242,6 +242,79 @@ The solution to this problem is adding Laplace (add-1) smoothing for Naive Bayes
 
 $$P(w_i | c) = \dfrac{count(w_i, c) + 1}{(\sum_{w \in W} {(count(w, c) + 1)}} = \dfrac{count(w_i, c) + 1}{\sum_{w \in W} {count(w, c)}) + |W|}$$
 
+Let's walk through calculation of all this parameters:
+
+\begin{itemize}
+  \item From training corpus, extract Vocabulary - the list of words.
+  \item Calculate $P(c)$ terms
+\end{itemize}
+
+For each $c_j \in C$ do
+$docs_j <- all docs with class c_j$ 
+
+$$P(w_i | c) = \dfrac{|docs_j|}{|total \# documents|}$$
+
+Calculate $P(w_k | c_j)$ terms
+$Text_j <- single doc containing all docs_j$
+
+For each $w_k \in W$
+$n_k <- number of occurences of w_k in Text_j$
+$$P(w_k | c_j) = \dfrac{n_k + \alpha}{n + \alpha \times |W|}$$
+
+added alpha smooth instead of one smooth.
+
+
+It turns out naive bayes has a very close relationship to language modeling. One of the simplest to understand yet powerful enough language models is trigram model.
+
+Each class in Naive Bayes classifier is a unigram language model.
+
+Probaility of word: $P(word | c)$
+
+Probability of sentence: $P(s | c) = \prod{}{P(word | c)}$
+
+Let us see how it works. Imagine that we have a class positive:
+And we have table of likelihoods of each word.
+
+
+\begin{center}
+  \begin{tabular}{ c | c }
+    \hline
+    Likelihood & Word \\ \hline
+    0.1 & like\\ \hline
+    0.1 & love \\ \hline
+    0.01 & this \\ \hline
+    0.05 & fun \\ \hline
+    0.1 & film \\ \hline
+  \end{tabular}
+\end{center}
+
+Then the probability of sentence "I love this fun film" will be $P(s | pos) = 0.0000005$.
+So naive bayes is just a unigram language model conditioned on the class.
+
+A model negative can look like:
+
+\begin{center}
+  \begin{tabular}{ c | c }
+    \hline
+    Likelihood & Word \\ \hline
+    0.2 & like\\ \hline
+    0.0001 & love \\ \hline
+    0.01 & this \\ \hline
+    0.005 & fun \\ \hline
+    0.1 & film \\ \hline
+  \end{tabular}
+\end{center}
+
+Then the probability of sentence "I love this fun film" will be $P(s | neg) = ???$.
+
+As we can see $P(s | pos) > P(s | neg)$.
+
+
+Summary:
+Very fast algorithm, low storage requirements
+Robust to irrelevent features: Irrelevant features cancel each other without affecting results.
+Very good at domains with many equally important features
+Optimal if idependence assumption is true. Of course it is rare.
 TODO
 
 \newpage
@@ -267,7 +340,7 @@ Words.
 
 \addcontentsline{toc}{chapter}{References}
 
-\begin{thebibliography}{30}
+\begin{thebibliography}{9}
 
 \bibitem{Chris Manning and Hinrich} Manning, Chris and Hinrich Sch{\"u}tze. \textit{Foundations of Statistical Natural Language Processing}. Cambridge [England]: MIT Press, 1999.
 
@@ -278,6 +351,8 @@ Words.
 \bibitem{Witten and Frank} Witten, Ian, and Eibe Frank. \textit{Data Mining: Practical Machine Learning Tools and Techniques THIRD EDITION}. Burlington [USA]: Morgan Kaufmann Publications, 2010.
 
 \bibitem{McKinney} McKinney, Wes. \textit{Python for Data Analysis: Data Wrangling with Pandas, NumPy, and IPython 1st Edition}. Sebastopol [USA]: 2012.
+
+\bibitem{mic} https://msdn.microsoft.com/en-us/library/ms174806.aspx TODO
 
 \end{thebibliography}
 
