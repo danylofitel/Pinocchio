@@ -102,6 +102,8 @@ $f : M \rightarrow \{S, L\}$ - classification function that given a message dete
 
 $T = \{(m_1, c_1), (m_2, c_2), ..., (m_k, c_k)\}, m_i \in M, c_i \in \{S, L\}, 1 \leq i \leq k$ - the training set of already classified messages.
 
+$T_c = T \cap c, c \in \{L, S\}$ - training set of legitimate ($T_L$) or spam ($T_S$) messages.
+
 $x = (x_1, x_2, \dots, x_n), x_i \in \{0, 1\}, 1 \leq i \leq n$ - binary feature vector of a message. Each coordinate specifies whether a specific feature applies to the message.
 
 \newpage
@@ -325,7 +327,7 @@ Because of the above reasons and due to the large number of parameters that requ
 
 \section{SVM Classifier}
 
-Support Vector Machines (SVM) is a class of widely used algorithms for classification and regression developed by V. Vapnik. The theoretical foundation of SVM is the Statistical Learning Theory that gives certain guarantees of performance. Let us consider classification problem with SVM for linearly separable data.
+Support Vector Machines (SVM) is a class of widely used algorithms for classification and regression. The theoretical foundation of SVM is the Statistical Learning Theory that gives certain guarantees of performance. Let us consider classification problem with SVM for linearly separable data.
 
 SVM works in a similar manner to perceptron in terms of finding a linear boundary that separates test data according to their classes. However, the purpose of SVM is not to find any of these boundaries if they exist, but to find the maximal margin separating hyperplane, for which the distance to the closest training sample is maximal.
 
@@ -359,7 +361,7 @@ $$b_o = \frac{1}{c_m} - w_o^T x_k$$
 
 where $m$ is an arbitrary index for which $\alpha_m \ne 0$.
 
-It is more-or-less clear that the resulting hyperplane is completely defined by the training samples that are at minimal distance to it. These training samples are called support vectors and thus give the name to the method. It is possible to tune the amount of false positives produced by an SVM classifier, by using the so-called soft margin hyperplane and there are also lots of other modifications related to SVM learning. Recall the training and classification process.
+The resulting hyperplane is defined by the training samples that are at minimal distance to it, so called \textit{support vectors}. Training process is quite complex, while classification is extremely simple.
 
 \textbf{Training process}
 
@@ -434,7 +436,7 @@ Of course, this is not the only way to store and perform lookup on feature vecto
 
 Let us outline the updated training and classification algorithms. Let $M(c, x), c \in \{L, S\}, x \in 2^{|n|}$ denote the power of subset of $c$ with feature vector $x$.
 
-\subsection{Updated Classification Algorithm}
+\subsection{Non-Naive Bayesian Classification Algorithm}
 
 Let us now outline the updated algorithm for training and classification.
 
@@ -457,11 +459,11 @@ Let us now outline the updated algorithm for training and classification.
 
 \subsection{Generalizing Probability of Feature Vectors}
 
-In case of naive approach only probabilities of separate features need to be stored. They are sufficient to determine the overall probability of the feature vector for all $2^n$ combinations, regardless of whether they are present in the training set. In the approach described above, however, only the information about concrete feature vectors from the training set is stored. While it is possible to calculate probability of any feature vector in the training set by the algorithm above, in its current version probability of any feature vector that is not in the training is $0$.
+In case of naive approach only probabilities of separate features need to be stored. They are sufficient to determine the overall probability of the feature vector for all $2^n$ combinations, regardless of whether they are present in the training set. In the approach described above, however, only the information about concrete feature vectors from the training set is stored. While it is possible to calculate probability of any feature vector in the training set by the algorithm above, in its current version probability of any feature vector that is not in the training set to be in either $L$ or $S$ is $0$. In fact, probability of any message $m$ to belong to $c$ will be non-zero if and only if the training set contains at least one message with identical feature vector.
 
 This can be interpreted as excessive 'formality', i.e. the algorithm produces the optimal result, but in the context of given training set. We would naturally want to get a reasonable approximation of the probability of messages that are not present in the training set. Note that out of $2^n$ possible feature vectors at most $k$ will be present in the constructed trie, and the probability that the algorithm will produce the expected result is $\frac{k}{2^n}$ at best. Therefore, without providing an alternative probability for unrecognized feature vectors these modifications will be useless in practice.
 
-One possible solution is to fall back to naive Bayesian classifier for all feature vectors that are not in the training set. In this case, our modified classifier will only produce different results for a small fraction of possible messages, making these modifications negligible in practice. For example, under assume that $k <= 2^30$, (i.e. the training set is unlikely to contain more than 1 billion messages in practice) $n$ has to be comparable with $log_2(k) = 30$. Obviously, we want to include significantly more features.
+One possible solution is to fall back to naive Bayesian classifier for all feature vectors that are not present in the training set. In this case, our modified classifier will only produce different results for a small fraction of possible messages ($\frac{k}{2^n}$), making these modifications negligible in practice. For example, even if we assume that the training set contains $k_u$ unique feature vectors, for $k_u <= 2^30$, (i.e. the training set is very unlikely to contain more than 1 billion messages in practice) $n$ has to be not larger than $log_2(k) = 30$. Obviously, we want to include significantly more features.
 
 \newpage
 
@@ -477,7 +479,7 @@ We can express probability $P(x | c), c \in \{L, S\}$ in terms of conditional pr
 	$P(x | c) = P(x_1 | c) P(x_2 | x_1, c) P(x_3 | x_1, x_2, c) \dots P(x_n | x_1, x_2, \dots, x_{n - 1}, c) = \prod_{i=1}^{n}P(x_i | \bigcap_{j = 1}^{i - 1} x_j, c)$
 \end{center}
 
-Let us first consider any of the probabilities $P(x_i | x_1, x_2, \dots, x_{i-1}, c)$ for given values of $x_1, \dots, x_{i - 1}$ and $c$. The constraint of $c$ limits the set of messages to either only legitimate messages or only spam. The constraints on the fist $i - 1$ features require the first $i - 1$ components of the feature vector to be equal to $(x_1, x_2, \dots, x_{n-1})$.
+Let us first consider any of the probabilities $P(x_i | x_1, x_2, \dots, x_{i-1}, c)$ for given values of $x_1, \dots, x_{i - 1}$ and $c$. The constraint of $c$ limits the set of messages to either only legitimate messages or only spam. The constraints on the fist $i - 1$ features require the first $i - 1$ components of the feature vector to be equal to given values $(x_1, x_2, \dots, x_{n-1})$.
 
 We will now extend the function $M$ from the previous section to be able to compute the number of features with constraints on some indexes. Let $M(c, x_1, x_2, \dots, x_l)$, $1 \leq l \leq n$ denote the power of subset of $c$ with the first $l$ features equal to $x_1, x_2, \dots, x_l$. Then
 
@@ -485,40 +487,128 @@ We will now extend the function $M$ from the previous section to be able to comp
 	$P(x_i | x_1, x_2, \dots, x_{i-1}, c) = \dfrac{M(c, x_1, x_2, \dots, x_i)}{M(c, x_1, x_2, \dots, x_{i-1})}$
 \end{center}
 
-The value of $M(c, x_1, \dots, x|i)$ is the number of messages in the training set of legitimate or spam messages (depending on $c$) feature vectors of which start with $x_1, x_2, \dots, x_i$. One way to find this value is to go through all training messages of category $c$ and count the number of those with feature vectors that match $x_1, \dots, x_n$. This would mean $O(nk)$ time complexity for each probability in the chain, and overall complexity of $P(x | c)$ would be $O(\sum_{i=1}^{n} nk) = O(n^2 k)$, which is, of course, not feasible in practice.
+The value of $M(c, x_1, \dots, x|i)$ is the number of messages in the training set of legitimate or spam messages (depending on $c$) feature vectors of which start with $x_1, x_2, \dots, x_i$. One way to find this value is to go through all training messages of category $c$ and count the number of those with feature vectors that match $x_1, \dots, x_n$. This would mean $O(nk)$ time complexity for each probability in the chain, and overall complexity for $P(x | c)$ would be $O(\sum_{i=1}^{n} nk) = O(n^2 k)$, which is, of course, not feasible in practice.
 
 However, we can reuse the trie that we already are using for calculating $M(c, x_1, \dots, x_n)$, only in this case we need to retrieve the number of messages feature vector of which matches the first $i$ given coordinates. This can be done in $O(n)$ if in each node we store the sum of values of all terminal nodes in the subtree rooted at that node. This will give us exactly the number of messages feature vector of which satisfies the constraints on the first $i$ coordinates.
 
-In fact, as we follow the path in the trie, on each step we will calculate exactly one of the probabilities in the chain. Taking their product gives us the final probability with overall complexity of $O(n)$. Essentially this is the same as non-Bayesian approach described earlier, but with more granularity of probabilities.
+In fact, as we follow the path in the trie, on each step we will calculate exactly one of the probabilities in the chain. Taking their product gives us the final probability with overall complexity of $O(n)$. Essentially, this approach is just a different computation of the same non-Bayesian classifier, but it can be modified more easily.
 
 \subsection{Approximation for Feature Vectors Outside The Training Set}
 
-The chain rule allows us to compute the exact value of $P(x | c)$, but it does not solve the problem of feature vectors that are not in the training set having zero probability. In the previous section we suggested that a priori probability (like in naive Bayesian classifier) can be used. We can expand this to the case of chain probability: if any of the probabilities $P(x_i | x_1, \dots, x_{i-1}, c)$ is equal to zero, it is replaced with a-priori $P(x_i | c)$.
+The chain rule allows us to compute the exact value of $P(x | c)$, but it does not solve the problem of feature vectors that are not in the training set having zero probability. In the previous section we suggested that a priori probability (like in naive Bayesian classifier) can be used for the whole feature vector.
 
-Let us look in details at computation phase during trie traversal. At each step we compute the probability $P(x_i | x_1, \dots, x_{i-1}, c)$ as the ratio of size of the subtree with given $x_i$ to the size of current subtree. This means that size of the next subtree becomes size of the current subtree after each step. If any of the probabilities in the chain is zero,
+We can apply the same idea, but to each of the probabilities in the chain separately: if any of the probabilities $P(x_i | x_1, \dots, x_{i-1}, c)$ are equal to zero, they are replaced with a priori $P(x_i | c)$.
 
-TODO: updated training and classification algorithms.
+As before, probabilities of all feature vectors that are present in the training set will not change after such modification. To prove this, let us consider each of the probabilities in the chain rule for some message $m \in c$ for fixed $c$. For $1 \le i \le n$:
+\begin{center}
+	$P(x_i | x_1, \dots, x_{i-1}, c) = \dfrac{|m \in T_c : x_1^m = x_1, \dots, x_i^m = x_i|}{|m \in T_c : x_1^m = x_1, \dots, x_{i-1}^m = x_{i-1}|}$
+\end{center}
 
-\subsection{Limited Conditional Probabilities}
+Note that $1 \le \forall i \le n$ neither nominator nor denominator are equal to $0$ since the corresponding subsets of $T_c$ contain at least the message $m$. Therefore, the chain rule Bayesian classifier compared to non-naive classifier only changes the probability of messages that would otherwise have zero probability.
+	
+One can notice that after the feature with zero conditional probability the chain rule classifier behaves identically to naive Bayesian classifier, i.e. for the rest of the features it only considers the a priori probability. It is still possible to compute the a posteriori probability while ignoring some features, therefore avoiding the situation with zero probability. However, such approach can be extremely expensive since for each component of the chain $O(2^n)$ potential subsets of conditions can be considered. Also, recall that while the trie allows to compute any of the probabilities in the chain in $O(n)$ time, it is only the case for all features in order.
 
-TODO: computation with limited depth.
+\subsection{Chain Rule Bayesian Classification Algorithm}
+
+Let us outline the final version of semi-naive Bayesian classifier based on chain rule computation.
+
+\textbf{Training process}
+
+\begin{enumerate}
+	\item Calculate $|L|$ and $|S|$. Time complexity: $O(k)$.
+	\item Calculate likelihood ratio $\lambda \frac{P(L)}{P(S)}$. Time complexity: $O(1)$.
+	\item For both $L$ and $S$ construct corresponding tries that allow to perform lookup of $M(c, x_1, x_2, \dots, x_i), 1 \le i \le n$. Time complexity: $O(nk)$. Space complexity: $O(nk)$.
+\end{enumerate}
+
+Time complexity: $O(nk)$. Space complexity: $O(nk)$.
+
+\textbf{Classification process}
+
+\begin{enumerate}
+	\item Determine feature vector $x$ for message $m$. Time complexity: $O(|m|)$ where $|m|$ is the number of words in $m$.
+	\item Calculate $P(x | L) = \prod_{i=1}^{n} P(x_i | \bigcap_{j = 1}^{i - 1} x_j, L)$ and $P(x | S) = \prod_{i=1}^{n} P(x_i | \bigcap_{j = 1}^{i - 1} x_j, S)$ using the corresponding paths in the tries. Time complexity: $O(n)$.
+	\item Calculate $\Lambda(x) = \frac{P(x | S)}{P(x | L)}$. Time complexity: $O(1)$.
+	\item Use Bayes's decision rule to determine class of the message. Time complexity: $O(1)$.
+\end{enumerate}
+
+Time complexity: $O(n)$. Space complexity: $O(1)$.
+
+Note that the asymptotic complexity of classification is the same as in case of naive Bayesian algorithm.
+
+\subsection{Limited Number of Conditional Probabilities}
+
+Some scenarios might require additional constraints on time or space complexity of the training phase. The proposed algorithm does allow for trade-offs between the number of conditions and speed/space.
+
+The first modification that can significantly improve training and classification speed of chain rule classifier is to only calculate a limited number of conditional probabilities, using naive assumption for the rest. It is similar to what the classifier is already doing for most messages, but with a strictly defined limit on the number of extra calculations.
+
+Let $d$, $1 \le d \le n$ be the limit on features for which we will calculate conditional probabilities. For the first $d$ features in the feature vector we will construct the trie, for the rest we will compute unconditional probabilities.
+
+\textbf{Training process}
+
+\begin{enumerate}
+	\item Calculate $|L|$ and $|S|$. Time complexity: $O(k)$.
+	\item Calculate likelihood ratio $\lambda \frac{P(L)}{P(S)}$. Time complexity: $O(1)$.
+	\item For all $w_i \in W$ calculate and store $P(x_i), d+1 \le i \le n$. Time complexity: $O(k(n-d))$, space complexity: $O(n-d)$.
+	\item For both $L$ and $S$ construct corresponding tries that allow to perform lookup of $M(c, x_1, x_2, \dots, x_i), 1 \le i \le d$. Time complexity: $O(dk)$. Space complexity: $O(dk)$.
+\end{enumerate}
+
+Time complexity: $O(nk)$. Space complexity: $O(dk)$.
+
+\textbf{Classification process}
+
+\begin{enumerate}
+	\item Determine feature vector $x$ for message $m$. Time complexity: $O(|m|)$ where $|m|$ is the number of words in $m$.
+	\item Calculate $\prod_{i=d+1}^{n} P(x_i)$ using the stored values. Time complexity: $O(n-d)$.
+	\item Calculate $P(x | L) = \prod_{i=1}^{d} P(x_i | \bigcap_{j = 1}^{i - 1} x_j, L)$ and $P(x | S) = \prod_{i=1}^{d} P(x_i | \bigcap_{j = 1}^{i - 1} x_j, S)$ using the corresponding paths in the tries. Time complexity: $O(d)$.
+	\item Calculate $\Lambda(x) = \frac{P(x | S)}{P(x | L)}$. Time complexity: $O(1)$.
+	\item Use Bayes's decision rule to determine class of the message. Time complexity: $O(1)$.
+\end{enumerate}
+
+Time complexity: $O(n)$. Space complexity: $O(1)$.
+
+The above modification allows to limit the space requirements regardless of the number of features. This can be useful for applications with multiple customized classifiers each based on a separate training set.
 
 \subsection{Limited Number Of Conditions}
 
-TODO: computation with limited number of conditions.
+Another possible modification is to limit the number of conditions for each probability in the chain with some constant $d$. The easiest example would be to exclude features $x_{d+1}, \dots, x_{n}$ from conditions.
+
+The algorithm would be almost identical to the previous case. Calculation of probabilities of the first $d$ elements of the chain remains unchanged. Calculation of the rest is the same as in default chain rule classifier, however conditions after $x_d$ are ignored. This results in the following conditional probability:
+
+\begin{center}
+	$P(x | c) = \prod_{i=1}^{d}P(x_i | \bigcap_{j = 1}^{i - 1} x_j, c) \prod_{i=d+1}^{n}P(x_i | \bigcap_{j = 1}^{d} x_j, c)$
+\end{center}
+
+The core algorithm remains the same, the only difference is that the depth of the search trie will be limited by $d$.
+
+\textbf{Training process}
+
+\begin{enumerate}
+	\item Calculate $|L|$ and $|S|$. Time complexity: $O(k)$.
+	\item Calculate likelihood ratio $\lambda \frac{P(L)}{P(S)}$. Time complexity: $O(1)$.
+	\item For both $L$ and $S$ construct corresponding tries that allow to perform lookup of $M(c, x_1, x_2, \dots, x_i), 1 \le i \le d$. Time complexity: $O(nk)$. Space complexity: $O(dk)$.
+\end{enumerate}
+
+Time complexity: $O(nk)$. Space complexity: $O(dk)$.
+
+\textbf{Classification process}
+
+\begin{enumerate}
+	\item Determine feature vector $x$ for message $m$. Time complexity: $O(|m|)$ where $|m|$ is the number of words in $m$.
+	\item Calculate $P(x | L) = \prod_{i=1}^{n} P(x_i | \bigcap_{j = 1}^{\min(i - 1, d)} x_j, L)$ and $P(x | S) = \prod_{i=1}^{n} P(x_i | \bigcap_{j = 1}^{\min(i - 1, d)} x_j, S)$ using the corresponding paths in the tries. Time complexity: $O(n)$.
+	\item Calculate $\Lambda(x) = \frac{P(x | S)}{P(x | L)}$. Time complexity: $O(1)$.
+	\item Use Bayes's decision rule to determine class of the message. Time complexity: $O(1)$.
+\end{enumerate}
+
+Time complexity: $O(n)$. Space complexity: $O(1)$.
+
+One potential modification in this direction would be to split the features (words in our case) into groups with high correlation within each group but weak correlation between groups, and then compute conditional probabilities between features of the same group.
 
 \newpage
 
 
-\chapter{Other Modifications}
+\chapter{Feature Selection}
 
-\section{Combined Boosting}
-
-Words, formulas.
-
-\newpage
-
-\section{Adaptive Feature Selection}
+\section{Mutual Information Based Feature Selection}
 
 Words, formulas.
 
@@ -526,6 +616,8 @@ Words, formulas.
 
 
 \chapter{Performance Comparison in Practice}
+
+\section{Classification Quality}
 
 Words, tables, graphs, pictures, code.
 
