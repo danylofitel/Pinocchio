@@ -126,6 +126,202 @@ TODO precission and recall
 
 \newpage
 
+\chapter{Classification Techniques}
+
+\section{k Nearest Neighbors}
+
+$k$ Nearest Neighbors (KNN) is part of supervised learning that has been used in many applications in the field of data mining, statistical pattern recognition, image processing and many others. The idea is to predict class for a given feature vector using so called majority voting. Suppose we want to predict label for a feature vector $x_i \in X_{test}$. Then we look on labels of $k$ training vectors which are "the closest" to $x_i$ and use the most frequent label as a prediction. To define "closeness" some distance metric is used. There are several options for distance functions.
+
+A commonly used distance metric for continuous and discrete variables is Euclidean distance:
+$$ \sum_{i=1}^{n} (a_i - b_i)^2$$, where a,b - feature vectors. $a_i - b_i$ - vector difference.
+
+For discrete variables, such as for text search, another metric can be used, such as the overlap metric (or Hamming distance).
+
+The best choice of k depends upon the data; generally, larger values of k reduce the effect of noise on the classification, but make boundaries between classes less distinct. A good k can be selected by various heuristic techniques. In our case though I am going to use a fixed value.
+
+This alorithm does not require training step. Having sets $X_{train}$ and $Y_{train}$ and distance function $dist$ is enough for making predictions. On the other hand, the classification of test data takes time, because for every review without label, the whole training corpus must be processed to calculate distance. For one prediction expected time complexity is $O(m_{train} * n)$. Performing indexing on the training set can decrease the running closer to $O(n)$. However, indexing is a computationally heavy operation and in case data is updated often, this approach becomes infeasible. Moreover, precission of this classification algorithm is usually low compared to others. Another drawback of the basic "majority voting" classification occurs when the class distribution is skewed. That is, examples of a more frequent class tend to dominate the prediction of the new example, because they tend to be common among the k nearest neighbors due to their large number.
+
+In practice KNN algorithm performs worse than other algorithms. Therefore KNN model is mostly used as a baseline to compare it with other models.
+
+\newpage
+
+\section{Naive Bayes}
+
+Naive Bayes algorithm is a classification algorithm based on Bayes' theorems, and can be used for both exploratory and predictive modeling. The word naive in the name Naive Bayes derives from the fact that the algorithm uses Bayesian techniques but does not take into account dependencies that may exist. This algorithm is less computationally intense than most other classification algorithms, and therefore is useful for quickly generating mining models to discover relationships between input columns and predictable columns %\cite{mic}.
+
+Naive Bayes relies on very simple representation of the document - Bag of words.
+
+Input:
+
+\begin{itemize}
+  \item A document $d$
+  \item A fixed set of classes $C=\{c_1, c_2,..., c_j\}$
+  \item A training set of $m$ hand-labeled documents $(d_1, c_1), (d_2, c_2),..., (d_m, c_m)$
+\end{itemize}
+
+Output: 
+\begin{itemize}
+  \item A learned classifier $y: d \rightarrow c$.
+\end{itemize}
+
+According to the Bayes theorem, for a document $d$ and class $c$:
+
+$$P(c | d) = \dfrac{P(d | c) P(c)}{P(d)}$$.
+
+This probability can be used to predict a class of a document.
+
+$$c_{best} = \arg\!\max_{c \in C} P(c | d) = \arg\!\max_{c \in C} \dfrac{P(d | c) P(c)}{P(d)} = \arg\!\max_{c \in C} {P(d | c) P(c)}$$
+
+Taking into account the fact that d is a bag (set) of words:
+
+$$c_{best} = \arg\!\max_{c \in C} {P(d | c) P(c)} = \arg\!\max_{c \in C} {P(w_1, w_2,..., w_n | c) P(c)}$$
+
+Now let us find the way to compute two probailities in the equation above. Let us start with $P(c)$. This probability can be estimated by computing how often this class occurs. It can be computed by counting relative frequencies in a corpus.
+
+Computing $P(w_1, w_2,..., w_n | c)$ is more subtle. There is $|W|^n * |C|$ parameters to be computed, which is impossible in practice. In Naive Bayes classifier two simplifying assumptions are made:
+
+\begin{itemize}
+  \item \textbf{Bag of Words assumption:} Assume position does not matter
+  \item \textbf{Conditional Independence:} Assume the feature probabilities $P(x_i | c)$ are independent given a class c.
+\end{itemize}
+
+Despite these simplification, in practice a problem can be solved with a high degree of accuracy. The result of the simplyfying assumptions is the following equation:
+$$P(w_1, w_2,..., w_n | c) = P(w_1 | c) \times P(w_2 | c) \times ... \times P(w_n | c)$$
+
+Therefore:
+$$c_{best} = \arg\!\max_{c \in C} {P(w_1, w_2,..., w_n | c) P(c)} = \arg\!\max_{c \in C} P(c) \prod_{w \in W} {P(w | c) }$$
+
+Now we have to find the way to compute these probabilities. The most natural way to implement this is simply to use frequencies in the data.
+
+$$P(w_i | c) = \dfrac{doccount(C=c)}{N_{doc}}$$
+
+$$P(c) = \dfrac{count(w_i, c)}{\sum_{w \in W} {count(w, c)}}$$
+
+So I am going to compute the fraction of times word $w_i$ appears among all words in documents of class $c$. To do that it is possible to concatenate all available documents of a particular class $c$ into one mega-document. In case of this paper there is two mega-docuemtns $D_{pos}$ and $D_{neg}$, which correspond to positive and negative reviews.
+
+Unfortunatelly, there is a problem with the approach described above. What should happen if we have not seen training example with the word \textbf{fantastic} and classified in the positive?
+$$P("fantastic" | positive) = \dfrac{count("fantastic", positive)}{\sum_{w \in W} {count(w, positive)}} = 0$$
+
+As can be seen, even though the word \textbf{fantastic} is usually associated with positive sentiment, the probability of a document which contains this word belongs to $D_{pos}$ is zero. Here is why:
+$$c_{best} = \arg\!\max_{c \in C} P(c) P("fantastic" | c) \prod_{w \in W/\{"fantastic"\}} {P(w | c) }$$
+
+For positive class this product is equal to zero.
+
+The solution to this problem is adding Laplace (add-1) smoothing for Naive Bayes. Simply one is added to each of the counts:
+
+$$P(w_i | c) = \dfrac{count(w_i, c) + 1}{(\sum_{w \in W} {(count(w, c) + 1)}} = \dfrac{count(w_i, c) + 1}{\sum_{w \in W} {count(w, c)}) + |W|}$$
+
+
+Now the algorithm can be defined:
+
+\begin{itemize}
+  \item From training corpus, extract Vocabulary - the list of words.
+  \item Calculate $P(c)$ terms
+    
+   For each $c_j \in C$ do
+  
+      $docs_j$ <- all documents with class $c_j$ 
+
+$$P(w_i | c_j) = \dfrac{|docs_j|}{|total \# documents|}$$
+
+  \item Calculate $P(w_k | c_j)$ terms
+
+$Text_j$ <- single document containing all $docs_j$
+
+For each $w_k \in W$
+
+$n_k$ <- number of occurences of $w_k$ in $Text_j$
+
+$n$ <- total number of words in the class $j$.
+
+$$P(w_k | c_j) = \dfrac{n_k + \alpha}{n + \alpha \times |W|}$$
+
+Note: In the last equation $\alpha$ is used instead of one to generalize the model.
+\end{itemize}
+
+It turns out Naive Bayes has a very close relationship to language modeling.
+Each class in Naive Bayes classifier is a unigram language model. TODO link on unigram language model.
+
+Probaility of word: $P(word | c)$
+
+Probability of sentence: $P(s | c) = \prod{}{P(word | c)}$
+
+Let us see how it works. Imagine that we have a class positive:
+And we have table of likelihoods of each word.
+
+\begin{center}
+  \begin{tabular}{ c | c }
+    \hline
+    Likelihood & Word \\ \hline
+    0.05 & I \\ \hline
+    0.2 & love \\ \hline
+    0.002 & this \\ \hline
+    0.05 & beautiful \\ \hline
+    0.03 & dress \\ \hline
+  \end{tabular}
+\end{center}
+
+Then the probability of sentence "I love this fun film" will be $P(s | pos) = 0.00000003$.
+
+A model negative can look like:
+
+\begin{center}
+  \begin{tabular}{ c | c }
+    \hline
+    Likelihood & Word \\ \hline
+    0.05 & I \\ \hline
+    0.002 & love \\ \hline
+    0.002 & this \\ \hline
+    0.0001 & beautiful \\ \hline
+    0.03 & dress \\ \hline
+  \end{tabular}
+\end{center}
+
+Then the probability of sentence "I love this fun film" will be $P(s | neg) = 0.0000000000006$.
+
+As we can see $P(s | pos) > P(s | neg)$. Therefore, this sentence is classified as positive, which is correct.
+Hence, Naive Bayes can be viewed as a unigram language model conditioned on the class.
+
+
+Summary:
+\begin{itemize}
+  \item Very fast algorithm, low storage requirements
+  \item Robust to irrelevent features: Irrelevant features cancel each other without affecting results.
+  \item Very good at domains with many equally important features
+  \item Optimal if idependence assumption is true. Of course it is rare.
+\end{itemize}
+
+\newpage
+
+\section{Logistic regression}
+
+Linear regression can easily be used for classification in domains with numeric attributes. Indeed, we can use any regression technique, whether linear or nonlinear, for classification. The trick is to perform a regression for each class, setting the output equal to 1 for training instances that belong to the class and 0 for those that do not. The result is a linear expression for the class. Then, given a test example of unknown class, calculate the value of each linear expression and choose the one that is largest. This scheme is sometimes called multiresponse linear regression.
+
+One way of looking at multiresponse linear regression is to imagine that it approximates a numeric membership function for each class. The membership func- tion is 1 for instances that belong to that class and 0 for other instances. Given a new instance, we calculate its membership for each class and select the biggest.
+
+Multiresponse linear regression often yields good results in practice. However, it has two drawbacks. First, the membership values it produces are not proper prob- abilities because they can fall outside the range 0 to 1. Second, least-squares regres- sion assumes that the errors are not only statistically independent but are also normally distributed with the same standard deviation, an assumption that is bla- tently violated when the method is applied to classification problems because the observations only ever take on the values 0 and 1.
+
+A related statistical technique called logistic regression does not suffer from these problems. Instead of approximating the 0 and 1 values directly, thereby risking illegitimate probability values when the target is overshot, logistic regression builds a linear model based on a transformed target variable %\cite{Witten and Frank|.
+
+In logistic regression the probability of classes is estimated in the following way:
+
+$$P(1 | w_1, w_2, ... w_n) = \dfrac{1}{1 + e^(-a_0 - a_1 w_1 - ... - a_n w_n)}$$
+- where $a_i$ is weight.
+
+$$P(0 | w_1, w_2, ... w_n) = 1 - P(1 | w_1, w_2, ... w_n)$$
+
+The goal function, which must be minimized, is:
+
+$$\sum_{i}^{m} {(1 - x_i) log(1 - P[1 | w_1, w_2, ... w_n]) + x_i log(P[(1 | w_1, w_2, ... w_n])}$$
+
+In the multiclass case, the training algorithm uses the one-vs-rest. One-vs-the-rest is also known as one-vs-all. This strategy consists in fitting one classifier per class. For each classifier, the class is fitted against all the other classes. In addition to its computational efficiency (only n_classes classifiers are needed), one advantage of this approach is its interpretability. Since each class is represented by one and one classifier only, it is possible to gain knowledge about the class by inspecting its corresponding classifier. This is the most commonly used strategy for multiclass classification and is a fair default choice %\cite{McKinney}.
+
+In comparison with Naive Bayes algorithm Logistic regression is better at Domains with many non-equally important features. Moreover, Logistic regression is as well robust to irrelevant features when regularization is properly set %\cite{kevinPMuprhy}.
+
+There are also drawbacks, for instance, Logistic regression is really fast algorithm, still Naive Bayes is faster.
+
+\newpage
+
 \chapter{Feature Extraction}
 
 \section{Motivation}
@@ -157,174 +353,6 @@ In the previous section I described in detail the process of words selection. Ho
 
 \newpage
 
-\chapter{Classification Techniques}
-
-\section{k Nearest Neighbors}
-
-$k$ Nearest Neighbors (KNN) is part of supervised learning that has been used in many applications in the field of data mining, statistical pattern recognition, image processing and many others. The idea is to predict class for a given feature vector using so called majority voting. Suppose we want to predict label for a feature vector $x_i \in X_{test}$. Then we look on labels of $k$ training vectors which are "the closest" to $x_i$ and use the most frequent label as a prediction. To define "closeness" some distance metric is used. There are several options for distance functions.
-
-A commonly used distance metric for continuous and discrete variables is Euclidean distance:
-$$ \sum_{i=1}^{n} (a_i - b_i)^2$$, where a,b - feature vectors. $a_i - b_i$ - vector difference.
-
-For discrete variables, such as for text search, another metric can be used, such as the overlap metric (or Hamming distance).
-
-The best choice of k depends upon the data; generally, larger values of k reduce the effect of noise on the classification, but make boundaries between classes less distinct. A good k can be selected by various heuristic techniques. In our case though I am going to use a fixed value.
-
-This alorithm does not require training step. Having sets $X_{train}$ and $Y_{train}$ and distance function $dist$ is enough for making predictions. On the other hand, the classification of test data takes time, because for every review without label, the whole training corpus must be processed to calculate distance. For one prediction expected time complexity is $O(m_{train} * n)$. Performing indexing on the training set can decrease the running closer to $O(n)$. However, indexing is a computationally heavy operation and in case data is updated often, this approach becomes infeasible. Moreover, precission of this classification algorithm is usually low compared to others. Another drawback of the basic "majority voting" classification occurs when the class distribution is skewed. That is, examples of a more frequent class tend to dominate the prediction of the new example, because they tend to be common among the k nearest neighbors due to their large number.
-
-In practice KNN algorithm performs worse than other algorithms. Therefore KNN model is mostly used as a baseline to compare it with other models.
-
-\newpage
-
-\section{Naive Bayes}
-
-Naive Bayes algorithm is a classification algorithm based on Bayes' theorems, and can be used for both exploratory and predictive modeling. The word naive in the name Naive Bayes derives from the fact that the algorithm uses Bayesian techniques but does not take into account dependencies that may exist. This algorithm is less computationally intense than most other classification algorithms, and therefore is useful for quickly generating mining models to discover relationships between input columns and predictable columns.
-
-Naive Bayes relies on very simple representation of the document - Bag of words.
-
-Input:
-
-\begin{itemize}
-  \item A document $d$
-  \item A fixed set of classes $C=\{c1, c2,..., c_j\}$
-  \item A training set of $m$ hand-labeled documents $(d1, c1), (d2, c2),..., (d_m, c_m)$
-\end{itemize}
-
-Output: 
-\begin{itemize}
-  \item A learned classifier $y: d \rightarrow c$.
-\end{itemize}
-
-For a document $d$ and class $c$
-
-$$P(c | d) = \dfrac{P(d | c) P(c)}{P(d)}$$.
-
-This probability can be used to predict a class of a document.
-
-$$c_{best} = \arg\!\max_{c \in C} P(c | d) = \arg\!\max_{c \in C} \dfrac{P(d | c) P(c)}{P(d)} = \arg\!\max_{c \in C} {P(d | c) P(c)}$$
-
-Taking into account that d is a bag of words:
-
-$$c_{best} = \arg\!\max_{c \in C} {P(d | c) P(c)} = \arg\!\max_{c \in C} {P(w_1, w_2,..., w_n | c) P(c)}$$
-
-Now let us find the way to compute those two probailities. Let us start with $P(c)$. We can answer the question how often this class occurs. It can be computed by counting relative frequencies in a corpus.
-
-Computing $P(w_1, w_2,..., w_n | c)$ is more subtle. There is $|W|^n * |C|$ parameters to be computed, which is impossible in practice. In Naive Bayes classifier two simplifying assumptions are made:
-
-\begin{itemize}
-  \item \textbf{Bag of Words assumption:} Assume position does not matter
-  \item \textbf{Conditional Independence:} Assume the feature probabilities $P(x_i | c)$ are independent given a class c.
-\end{itemize}
-
-Despite these simplification in practice a problem can be solved with a high degree of accuracy. The result of the simplyfying assumptions is the following equation:
-$$P(w_1, w_2,..., w_n | c) = P(w_1 | c) \times P(w_2 | c) \times ... \times P(w_n | c)$$
-
-Therefore:
-$$c_{best} = \arg\!\max_{c \in C} {P(w_1, w_2,..., w_n | c) P(c)} = \arg\!\max_{c \in C} P(c) \prod_{w \in W} {P(w | c) }$$
-
-Now we have to find the way to compute these probabilities. The most natural way to implement this is simply to use frequencies in the data.
-
-$$P(w_i | c) = \dfrac{doccount(C=c)}{N_{doc}}$$
-
-$$P(c) = \dfrac{count(w_i, c)}{\sum_{w \in W} {count(w, c)}}$$
-
-So I am going to compute the fraction of times word $w_i$ appears among all words in documents of class $c$. To do that it is possible to concatenate all available documents of a particular class $c$ into one mega-document. In case of this paper there is two mega-docuemtns $D_{pos}$ and $D_{neg}$, which correspond to positive and negative reviews.
-
-Unfortunatelly, there is a problem with the approach described above. What should happen if we have seen no training example with the word \textbf{fantastic} and classified in the positive?
-$$P("fantastic" | positive) = \dfrac{count("fantastic", positive)}{\sum_{w \in W} {count(w, positive)}} = 0$$
-
-As can be seen, even though the word \textbf{fantastic} is usually associated with positive sentiment, the probability of a document which contains this word belongs to $D_{pos}$ is zero. Here is why:
-$$c_{best} = \arg\!\max_{c \in C} P(c) P("fantastic" | c) \prod_{w \in W/\{"fantastic"\}} {P(w | c) }$$
-
-For positive class this product is equal to zero.
-
-The solution to this problem is adding Laplace (add-1) smoothing for Naive Bayes. Simply one is added to each of the counts:
-
-$$P(w_i | c) = \dfrac{count(w_i, c) + 1}{(\sum_{w \in W} {(count(w, c) + 1)}} = \dfrac{count(w_i, c) + 1}{\sum_{w \in W} {count(w, c)}) + |W|}$$
-
-Let's walk through calculation of all this parameters:
-
-\begin{itemize}
-  \item From training corpus, extract Vocabulary - the list of words.
-  \item Calculate $P(c)$ terms
-\end{itemize}
-
-For each $c_j \in C$ do
-$docs_j <- all docs with class c_j$ 
-
-$$P(w_i | c) = \dfrac{|docs_j|}{|total \# documents|}$$
-
-Calculate $P(w_k | c_j)$ terms
-$Text_j <- single doc containing all docs_j$
-
-For each $w_k \in W$
-$n_k <- number of occurences of w_k in Text_j$
-$$P(w_k | c_j) = \dfrac{n_k + \alpha}{n + \alpha \times |W|}$$
-
-added alpha smooth instead of one smooth.
-
-
-It turns out naive bayes has a very close relationship to language modeling. One of the simplest to understand yet powerful enough language models is trigram model.
-
-Each class in Naive Bayes classifier is a unigram language model.
-
-Probaility of word: $P(word | c)$
-
-Probability of sentence: $P(s | c) = \prod{}{P(word | c)}$
-
-Let us see how it works. Imagine that we have a class positive:
-And we have table of likelihoods of each word.
-
-
-\begin{center}
-  \begin{tabular}{ c | c }
-    \hline
-    Likelihood & Word \\ \hline
-    0.1 & like\\ \hline
-    0.1 & love \\ \hline
-    0.01 & this \\ \hline
-    0.05 & fun \\ \hline
-    0.1 & film \\ \hline
-  \end{tabular}
-\end{center}
-
-Then the probability of sentence "I love this fun film" will be $P(s | pos) = 0.0000005$.
-So naive bayes is just a unigram language model conditioned on the class.
-
-A model negative can look like:
-
-\begin{center}
-  \begin{tabular}{ c | c }
-    \hline
-    Likelihood & Word \\ \hline
-    0.2 & like\\ \hline
-    0.0001 & love \\ \hline
-    0.01 & this \\ \hline
-    0.005 & fun \\ \hline
-    0.1 & film \\ \hline
-  \end{tabular}
-\end{center}
-
-Then the probability of sentence "I love this fun film" will be $P(s | neg) = ???$.
-
-As we can see $P(s | pos) > P(s | neg)$.
-
-
-Summary:
-Very fast algorithm, low storage requirements
-Robust to irrelevent features: Irrelevant features cancel each other without affecting results.
-Very good at domains with many equally important features
-Optimal if idependence assumption is true. Of course it is rare.
-TODO
-
-\newpage
-
-\section{Logistic regression}
-
-Logistic regression definition and stuff.
-
-\newpage
-
 \chapter{Effectiveness of trained models}
 
 Words, tables, graphs, pictures, code.
@@ -345,6 +373,8 @@ Words.
 \bibitem{Chris Manning and Hinrich} Manning, Chris and Hinrich Sch{\"u}tze. \textit{Foundations of Statistical Natural Language Processing}. Cambridge [England]: MIT Press, 1999.
 
 \bibitem{Wake} Wake, Lisa. \textit{NLP : principles in practice}. St. Albans, Herts [England]: Ecademy Press, 2010.
+
+\bibitem{kevinPMuprhy} Murphy, Kevin. \textit{Machine Learning A Probabilistic Perspective}. Cambridge, Massachusetts [USA]: Massachusetts Institue of Technology, 2012.
 
 \bibitem{Jure Leskovec, Anand Rajaraman, Jeff Ullman} Leskovec, Jure, Anand Rajaraman, and Jeff Ullman. \textit{Mining of Massive Datasets SECOND EDITION}. Cambridge [England]: Cambridge University Press, 2014.
 
