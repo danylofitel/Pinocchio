@@ -17,6 +17,9 @@
 \contentsline {subsection}{\numberline {3.1.4}Generalizing Probability of Feature Vectors}{24}
 \contentsline {section}{\numberline {3.2}Semi-Naive Bayesian Classification}{25}
 \contentsline {subsection}{\numberline {3.2.1}Chain rule}{25}
+\contentsline {subsection}{\numberline {3.2.2}Approximation for Feature Vectors Outside The Training Set}{26}
+\contentsline {subsection}{\numberline {3.2.3}Limited Conditional Probabilities}{26}
+\contentsline {subsection}{\numberline {3.2.4}Limited Number Of Conditions}{26}
 \contentsline {chapter}{\numberline {4}Other Modifications}{27}
 \contentsline {section}{\numberline {4.1}Combined Boosting}{27}
 \contentsline {section}{\numberline {4.2}Adaptive Feature Selection}{28}

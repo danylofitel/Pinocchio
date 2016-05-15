@@ -459,17 +459,15 @@ Let us now outline the updated algorithm for training and classification.
 
 In case of naive approach only probabilities of separate features need to be stored. They are sufficient to determine the overall probability of the feature vector for all $2^n$ combinations, regardless of whether they are present in the training set. In the approach described above, however, only the information about concrete feature vectors from the training set is stored. While it is possible to calculate probability of any feature vector in the training set by the algorithm above, in its current version probability of any feature vector that is not in the training is $0$.
 
-This can be interpreted as excessive 'formality', i.e. the algorithm produces the optimal result, but in the context of given training set. We would naturally want to get a reasonable approximation of the probability of messages that are not present in the training set. Note that out of $2^n$ possible feature vectors at most $k$ will be present in the constructed trie, and the probability that the algorithm will produce the expected result is $\frac{k}{2^n}$ at worst. Therefore, providing an alternative probability for unrecognized feature vectors is essential.
+This can be interpreted as excessive 'formality', i.e. the algorithm produces the optimal result, but in the context of given training set. We would naturally want to get a reasonable approximation of the probability of messages that are not present in the training set. Note that out of $2^n$ possible feature vectors at most $k$ will be present in the constructed trie, and the probability that the algorithm will produce the expected result is $\frac{k}{2^n}$ at best. Therefore, without providing an alternative probability for unrecognized feature vectors these modifications will be useless in practice.
 
-One possible way is to fall back to naive Bayesian classifier for all feature vectors that are not in the training set. In this case, our modified classifier will only produce different results for a small fraction of possible messages. However, if the number of features $n$ is small, i.e. of order $\log_2 k$, the probability of any feature vector to be in the training set will be $1 - (\frac{k-1}{k})^k$, which is close to $1$ for large training sets.
-
-The downside of small number of features is that only fraction of available information is used. In practice we want feature vectors to include as many words as possible. Therefore, we should provide a different approximation of $P(x | c)$.
+One possible solution is to fall back to naive Bayesian classifier for all feature vectors that are not in the training set. In this case, our modified classifier will only produce different results for a small fraction of possible messages, making these modifications negligible in practice. For example, under assume that $k <= 2^30$, (i.e. the training set is unlikely to contain more than 1 billion messages in practice) $n$ has to be comparable with $log_2(k) = 30$. Obviously, we want to include significantly more features.
 
 \newpage
 
 \section{Semi-Naive Bayesian Classification}
 
-At this point we have an optimal algorithm for any message such that its feature vector is present in the training set. In this section we will describe a number of ways to give an approximation of probabilities for all possible feature vectors.
+At this point we have an optimal algorithm for any message such that its feature vector is present in the training set. In this section we will describe a number of ways to give an approximation of conditional probabilities for all possible feature vectors.
 
 \subsection{Chain rule}
 
@@ -481,26 +479,33 @@ We can express probability $P(x | c), c \in \{L, S\}$ in terms of conditional pr
 
 Let us first consider any of the probabilities $P(x_i | x_1, x_2, \dots, x_{i-1}, c)$ for given values of $x_1, \dots, x_{i - 1}$ and $c$. The constraint of $c$ limits the set of messages to either only legitimate messages or only spam. The constraints on the fist $i - 1$ features require the first $i - 1$ components of the feature vector to be equal to $(x_1, x_2, \dots, x_{n-1})$.
 
-We will now extend the function $M$ from the previous section. Let $M(c, x_1, x_2, \dots, x_l), 1 \leq l \leq n$ denote the power of subset of $c$ with the first $l$ features equal to $x_1, x_2, \dots, x_l$. Then
+We will now extend the function $M$ from the previous section to be able to compute the number of features with constraints on some indexes. Let $M(c, x_1, x_2, \dots, x_l)$, $1 \leq l \leq n$ denote the power of subset of $c$ with the first $l$ features equal to $x_1, x_2, \dots, x_l$. Then
 
 \begin{center}
 	$P(x_i | x_1, x_2, \dots, x_{i-1}, c) = \dfrac{M(c, x_1, x_2, \dots, x_i)}{M(c, x_1, x_2, \dots, x_{i-1})}$
 \end{center}
 
-The value of $M(c, x_1, \dots, x|i)$ is the number of messages in the training set of legitimate or spam messages (depending on c) feature vectors of which start with $x_1, x_2, \dots, x_i$. One way to find this value is to go through all training messages of category $c$ and count the number of those with feature vectors that match $x_1, \dots, x_n$. This would mean $O(nk)$ time complexity for each probability in the chain, and overall complexity of $P(x | c)$ would be $O(\sum_{i=1}^{n} nk) = O(n^2 k)$, which is, of course, not feasible in practice.
+The value of $M(c, x_1, \dots, x|i)$ is the number of messages in the training set of legitimate or spam messages (depending on $c$) feature vectors of which start with $x_1, x_2, \dots, x_i$. One way to find this value is to go through all training messages of category $c$ and count the number of those with feature vectors that match $x_1, \dots, x_n$. This would mean $O(nk)$ time complexity for each probability in the chain, and overall complexity of $P(x | c)$ would be $O(\sum_{i=1}^{n} nk) = O(n^2 k)$, which is, of course, not feasible in practice.
 
 However, we can reuse the trie that we already are using for calculating $M(c, x_1, \dots, x_n)$, only in this case we need to retrieve the number of messages feature vector of which matches the first $i$ given coordinates. This can be done in $O(n)$ if in each node we store the sum of values of all terminal nodes in the subtree rooted at that node. This will give us exactly the number of messages feature vector of which satisfies the constraints on the first $i$ coordinates.
 
-Using tries for storing intermediate values of $M(c, x_1, \dots, x_i)$ allows to perform lookup of these values in $O(n)$, therefore, computing $P(x | c)$ takes $O(\sum_{i=1}^{n} n) = O(n^2)$. This might be good enough in practice for relatively small values of $n$. Another benefit is that it does not depend on the size of the training set, therefore the quality of the classifier can be improved by increasing the training set without impacting classification performance.
+In fact, as we follow the path in the trie, on each step we will calculate exactly one of the probabilities in the chain. Taking their product gives us the final probability with overall complexity of $O(n)$. Essentially this is the same as non-Bayesian approach described earlier, but with more granularity of probabilities.
 
-TODO: philosophy about zero conditional probabilities in the chain.
+\subsection{Approximation for Feature Vectors Outside The Training Set}
+
+The chain rule allows us to compute the exact value of $P(x | c)$, but it does not solve the problem of feature vectors that are not in the training set having zero probability. In the previous section we suggested that a priori probability (like in naive Bayesian classifier) can be used. We can expand this to the case of chain probability: if any of the probabilities $P(x_i | x_1, \dots, x_{i-1}, c)$ is equal to zero, it is replaced with a-priori $P(x_i | c)$.
+
+Let us look in details at computation phase during trie traversal. At each step we compute the probability $P(x_i | x_1, \dots, x_{i-1}, c)$ as the ratio of size of the subtree with given $x_i$ to the size of current subtree. This means that size of the next subtree becomes size of the current subtree after each step. If any of the probabilities in the chain is zero,
 
 TODO: updated training and classification algorithms.
 
+\subsection{Limited Conditional Probabilities}
+
 TODO: computation with limited depth.
 
-TODO: computation with limited number of conditions.
+\subsection{Limited Number Of Conditions}
 
+TODO: computation with limited number of conditions.
 
 \newpage
 
