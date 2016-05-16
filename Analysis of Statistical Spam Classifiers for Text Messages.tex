@@ -108,19 +108,25 @@ Let us give a number of definitions that will be commonly used.
 
 $M$ - the set of all messages.
 
-$L \in M$ - the set of legitimate messages.
+$L \subseteq M$ - the set of legitimate messages.
 
-$S = m \setminus L$ - the set of spam messages.
+$S = M \setminus L$ - the set of spam messages.
 
 Note that we will often speak of $M$, $L$ and $S$ in context of the set of training messages.
-
-$f : M \rightarrow \{S, L\}$ - classification function that given a message determines its class. This function is the ultimate goal of any classification algorithm.
 
 $T = \{(m_1, c_1), (m_2, c_2), ..., (m_k, c_k)\}, m_i \in M, c_i \in \{S, L\}, 1 \leq i \leq k$ - the training set of already classified messages.
 
 $T_c = T \cap c, c \in \{L, S\}$ - training set of legitimate ($T_L$) or spam ($T_S$) messages.
 
 $x = (x_1, x_2, \dots, x_n), x_i \in \{0, 1\}, 1 \leq i \leq n$ - binary feature vector of a message. Each coordinate specifies whether a specific feature applies to the message.
+
+$f : M \rightarrow \{S, L\}$ - classification function that given a message determines its class. This function is the ultimate goal of any classification algorithm.
+
+We will also use the following symbols with fixed meanings:
+
+$n$ - the number of features used in classification.
+
+$k = |T|$ - the power of the training set.
 
 \newpage
 
@@ -378,12 +384,6 @@ The resulting hyperplane is defined by the training samples that are at minimal 
 \begin{enumerate}
 	\item For message with feature vector $x$ classify it as $sign(w^T x + b)$.
 \end{enumerate}
-
-\newpage
-
-\section{Boosting}
-
-AdaBoost.
 
 \newpage
 
