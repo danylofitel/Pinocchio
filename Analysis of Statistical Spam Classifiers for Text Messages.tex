@@ -69,7 +69,7 @@ Given the large number of messaging systems to which spam is applicable, the pro
 
 While the message metadata can provide additional information, in practice text classification is inevitable. It is usually the final step in classification process as it tends to be most expensive. Since the metadata processing is different from case to case, it is safe to say that the general problem of spam filtering comes down to the problem of binary text classification. Therefore, it makes sense to develop universal methods for spam classification of text messages that can be later adopted to any domain.
 
-In this paper we give an overview of a number of common statistical methods of performing spam filtering on text messages. In particular we focus on Bayesian classifier - one of the most common and effective approaches to spam filtering. We analyze existing approaches and develop a number of improvements that provide stronger theoretical results.
+In this thesis we give an overview of a number of common statistical methods of performing spam filtering on text messages. In particular we focus on Bayesian classifier - one of the most common and effective approaches to spam filtering. We analyze existing approaches and develop a number of improvements that provide stronger theoretical results.
 
 Additionally, we analyze common problems for training on text messages like feature selection. Finally, we provide a performance comparison of the detailed algorithms in practice.
 
@@ -80,15 +80,31 @@ Additionally, we analyze common problems for training on text messages like feat
 
 \section{Scope and Applications}
 
-A social networking service (or SNS) is a platform to build social networks or social relations among people who share similar interests, activities, backgrounds or real-life connections (definition from Wikipedia). The ultimate purpose of any social networking service is fast and efficient exchange of information, often with intention to present it to the largest audience possible.
-
-The vast majority of most popular social network services rely on text messages as the main form of exchange of information. Because of their openness, social networks can be extremely useful in spreading malicious messages across wide audiences, both via private (addressed to a particular individual) and public messages. Conceptually social network spam is no different from e-mail spam as private messaging services of popular social networks are equivalent in their functionality to e-mail. Hence, we can generalize the problem of classifying spam messages for both these cases.
+The vast majority of massively used communication services rely on text messages as the main form of information exchange. Because of their openness, such networks be extremely useful in spreading malicious messages across wide audiences, both via private (addressed to a particular individual) and public messages. Conceptually social network spam is no different from e-mail spam as private messaging services of popular social networks are equivalent in their functionality to e-mail. Hence, we can focus the problem of classifying spam messages in general, regardless of the platform.
 
 In general, the problem of spam detection depends heavily on the application's domain and can benefit from additional metadata available along with the text message. For example, in case of e-mails the mail header is the source of metadata. Modern spam filtering systems detect the vast majority of malicious mails by simply checking the sender's reputation before proceeding with analysis of the message body.
 
 This, of course, applies to all messaging services. Maximum effectiveness can not be achieved without using all available data in addition to the message text. However, in most cases text analysis is the second stage preceded by a domain-specific filter. Therefore, we can further focus on statistical classification of spam for text messages without specific constraints.
 
-Let us give a number of definitions that will be used throughout the paper.
+\newpage
+
+\section{Feature Selection}
+
+The entities we need to classify are text messages that are given in the form of strings. Raw strings are not convenient objects to handle in this case. Most machine learning algorithms can only classify numerical objects or otherwise require a distance metric or other measure of similarity between the objects.
+
+Before proceeding with machine learning we have to convert all messages to numerical vectors called \textit{feature vectors}, and then classify these vectors. The simplest example of a feature vector is the vector of the numbers of occurrences of certain words in a message or the vector of flags specifying whether each word occurs in the message or not.
+
+Extraction of features usually means that some information from the original message is lost. On the other hand, the way feature vector is chosen is crucial for the performance of the filter. If the features are chosen so that there may exist a spam message and a legitimate mail with the same feature vector, then any machine learning algorithm will make mistakes no matter how good it is.
+
+Even the ultimate feature vector containing frequencies of \textit{all} words in the message does not preserve semantical information. This problem however is out of scope and is in the domain of Natural Language Processing. In most practical applications the most basic vector of word frequencies or its modification is sufficient.
+
+Note that at the stage of feature selection it is possible to include the features from the available metadata along with features from message text. However, we will only focus on plain text as any of the described algorithms can be easily expanded to include more features.
+
+\newpage
+
+\section{Definitions}
+
+Let us give a number of definitions that will be commonly used.
 
 $M$ - the set of all messages.
 
@@ -105,20 +121,6 @@ $T = \{(m_1, c_1), (m_2, c_2), ..., (m_k, c_k)\}, m_i \in M, c_i \in \{S, L\}, 1
 $T_c = T \cap c, c \in \{L, S\}$ - training set of legitimate ($T_L$) or spam ($T_S$) messages.
 
 $x = (x_1, x_2, \dots, x_n), x_i \in \{0, 1\}, 1 \leq i \leq n$ - binary feature vector of a message. Each coordinate specifies whether a specific feature applies to the message.
-
-\newpage
-
-\section{Feature Selection}
-
-The entities we need to classify are text messages that are given in the form of strings. Raw strings are not convenient objects to handle in this case. Most machine learning algorithms can only classify numerical objects or otherwise require a distance metric or other measure of similarity between the objects.
-
-Before proceeding with machine learning we have to convert all messages to numerical vectors called \textit{feature vectors}, and then classify these vectors. The simplest example of a feature vector is the vector of the numbers of occurrences of certain words in a message or the vector of flags specifying whether each word occurs in the message or not.
-
-Extraction of features usually means that some information from the original message is lost. On the other hand, the way feature vector is chosen is crucial for the performance of the filter. If the features are chosen so that there may exist a spam message and a legitimate mail with the same feature vector, then any machine learning algorithm will make mistakes no matter how good it is.
-
-Even the ultimate feature vector containing frequencies of \textit{all} words in the message does not preserve semantical information. This problem however is out of scope and is in the domain of Natural Language Processing. In most practical applications the most basic vector of word frequencies or its modification is sufficient.
-
-Note that at the stage of feature selection it is possible to include the features from the available metadata along with features from message text. However, we will only focus on plain text as any of the described algorithms can be easily expanded to include more features.
 
 \newpage
 
@@ -321,7 +323,7 @@ The main reason to use multiple layers of neurons is that the multilayer neural 
 
 Performance of the neural network is proportional to the number of neurons. Thus, the large number of features directly impacts performance as it translates to increased number of input neurons and thus the complexity of the network in total. In practice the number of features would have to be more strictly limited than in case of a perceptron, which for spam detection means the trade-off between non-linear decision boundaries and the amount of information loss.
 
-Because of the above reasons and due to the large number of parameters that require tuning. the multilayer perceptron is hard to use in practice for spam detection. It has been successfully used for that purpose \cite{Tretyakov}, but it is not easily applicable in general case as it is hard to reconfigure. For the purposes of this paper we shall focus on a simple perceptron.
+Because of the above reasons and due to the large number of parameters that require tuning. the multilayer perceptron is hard to use in practice for spam detection. It has been successfully used for that purpose \cite{Tretyakov}, but it is not easily applicable in general case as it is hard to reconfigure. For the purposes of this thesis we shall focus on a simple perceptron.
 
 \newpage
 
@@ -432,7 +434,7 @@ Lookup of the feature vector also takes linear time $O(n)$ since we only follow 
 
 The amount of extra storage required by the trie is $O(nk)$ (consider the set of one message). Obviously, some fractions of the paths will be shared (different messages with identical feature vectors will share the whole path). One way to increase the number of shared nodes is to sort the features in descending order by the number of messages that have the same value of this feature, then more messages will share common beginning of the path.
 
-Of course, this is not the only way to store and perform lookup on feature vectors. We can also use a hash table. Calculating hash of the feature vector is $O(n)$. Construction and lookup are $O(nk)$ and $O(n)$ on average respectively, however they can be $O(n^2k)$ and $O(n^2)$ in the worst case. For the purposes of this paper we will focus on trie approach.
+Of course, this is not the only way to store and perform lookup on feature vectors. We can also use a hash table. Calculating hash of the feature vector is $O(n)$. Construction and lookup are $O(nk)$ and $O(n)$ on average respectively, however they can be $O(n^2k)$ and $O(n^2)$ in the worst case. For our purpose it will be sufficient to focus on trie approach.
 
 Let us outline the updated training and classification algorithms. Let $M(c, x), c \in \{L, S\}, x \in 2^{|n|}$ denote the power of subset of $c$ with feature vector $x$.
 
