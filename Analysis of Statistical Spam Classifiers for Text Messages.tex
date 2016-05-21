@@ -139,7 +139,7 @@ Consider the simple case of text classification based on the presence or absence
 
 Suppose we have two classes $L$ and $S$ corresponding to legitimate and spam messages, and that there is a known probability distribution of feature vectors $P(x | c), c \in \{L, S\}$. In general it is hard to define such distribution, but it is often possible to provide an approximation. What we need to obtain is the class that the given message belongs to, or the probability $P(c | x)$. This can be done using the Bayes' formula
 
-$$P(c | x) = \dfrac{P(x | c) P(c)}{P(x)} = \dfrac{P(x | c) P(c)}{P(x | L) P(L) + P(x | S) P(S)}$$.
+$$P(c | x) = \dfrac{P(x | c) P(c)}{P(x)} = \dfrac{P(x | c) P(c)}{P(x | L) P(L) + P(x | S) P(S)}$$
 
 where $P(x)$ is the a-priori probability of a message with feature vector $x$ and $P(c)$ is the probability of class $c$, i.e. the probability that any given message belongs to $c$. Given the values $P(c)$ and $P(x | c)$ for $c \in \{L, S\}$ one can calculate the probability $P(c | x)$ which can then be used in a classification rule.
 
@@ -291,8 +291,8 @@ Suppose the feature vector is two-dimensional, $x \in \re^2$. Then we can repres
 
 The learning process for a perceptron is iterative. The initial values of parameters $(w_0, b_0)$ can be arbitrary, as they are updated on each iteration. On the $k$-th iteration of the algorithm a training sample $(x, c)$ is chosen such that the current decision function does not classify it correctly, i.e. $sign(w_k^Tx + b_k) \ne c$. Then the parameters $(w_k, b_k)$ are then updated according to the rule:
 
-$$w_{k+1} = w_k + cx$$,
-$$b_{k+1} = b_k + c$$.
+$$w_{k+1} = w_k + cx$$
+$$b_{k+1} = b_k + c$$
 
 The algorithm terminates when a decision function that correctly classifies all training set is found. If the training set is linearly separable, the perceptron algorithm converges. It is known as Perceptron Convergence Theorem proven by Frank Rosenblatt in 1962 \cite{Cristianini}. If, however, the set is not linearly separable, the algorithm will never converge. In this case it is possible to still use the perceptron, but the training loop needs to stop when the number of misclassification becomes small.
 
@@ -322,7 +322,7 @@ where $w_i$ and $b$ are weights and bias of the neuron respectively, $\phi$ is a
 
 Like in the case of a single perceptron, training of a neural network is searching for the values of weights and biases for all neurons that minimize the output error. Let us denote $f(x)$ as the output of the neural network. Then for training samples $(x_i, c_i), 1 \leq i \leq k$ the training has to minimize the \textit{total training error}
 
-$$E(f) = \sum_{i = 1}^{k}|f(x_i) - c_i|^2$$.
+$$E(f) = \sum_{i = 1}^{k}|f(x_i) - c_i|^2$$
 
 An iterative algorithm can be used to perform this minimization. The most common one is the gradient descent which in case of neural networks is called \textit{error backpropagation}. The theory of backwards propagation of errors is well developed and has many implementations in practice \cite{Haykin}.
 
@@ -343,11 +343,11 @@ SVM works in a similar manner to perceptron in terms of finding a linear boundar
 \begin{definition}
 	Let $X = \{(x_i, c_i)\}$, $x_i \in \re^n$, $c_i \in \{-1, +1\}$ be the set of training samples and $(w, b)$ denote a separating hyperplane $sign(w^T x_i + b) = c_i$ for all $1 \leq i \leq k$. The margin $m_i$ of a training sample $(x_i, c_i)$ with respect to the separating hyperplane is the distance from $x_i$ to the hyperplane
 	
-	$$m_i = \dfrac{|w^T x_i + b|}{||w||}$$.
+	$$m_i = \dfrac{|w^T x_i + b|}{||w||}$$
 	
 	The margin $m$ of the separating hyperplane for training set $X$ is the smallest margin of an instance in the training set
 	
-	$$m = \min_i m_i$$.
+	$$m = \min_i m_i$$
 	
 	The maximal margin separating hyperplane for training set $X$ is the separating hyperplane with maximal margin with respect to the training set \cite{Tretyakov}.
 \end{definition}
@@ -364,7 +364,7 @@ with respect to dual variables $\alpha = (\alpha_1, \alpha_2, \dots, \alpha_k)$,
 
 The resulting problem is a classical quadratic optimization problem, for which there exist efficient solutions. Once we have found the solution $\alpha$, parameters $(w_o, b_o)$ of the optimal hyperplane are determined as
 
-$$w_o = \sum_{i = 1}^{k} \alpha_i c_i x_i$$,
+$$w_o = \sum_{i = 1}^{k} \alpha_i c_i x_i$$
 
 $$b_o = \frac{1}{c_m} - w_o^T x_k$$
 
@@ -573,7 +573,7 @@ Time complexity: $O(n)$. Space complexity: $O(1)$.
 
 The above modification allows to limit the space requirements regardless of the number of features. This can be useful for applications with multiple customized classifiers each based on a separate training set.
 
-\subsection{Limited Number Of Conditions}
+\subsection{Limited Number of Conditions}
 
 Another possible modification is to limit the number of conditions for each probability in the chain with some constant $d$. The easiest example would be to exclude features $x_{d+1}, \dots, x_{n}$ from conditions.
 
