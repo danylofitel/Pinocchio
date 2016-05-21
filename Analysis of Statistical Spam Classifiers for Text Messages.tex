@@ -61,17 +61,21 @@
 \chapter*{Introduction}
 \addcontentsline{toc}{chapter}{Introduction}
 
-The problem of spam has been around since the early days of e-mail services and has since evolved to numerous forms. Spam can vary by platform (e-mail, instant messaging, social network messaging), by intentions (from advertisement to phishing and ransom), by distribution targets (from a single individual or general public), etc.
+The problem of text spam has been around since the early days of e-mail services and has since evolved to numerous forms. Spam can vary by platform (e-mail, instant messaging, social network messaging), by intentions (from advertisement to phishing and ransom), by distribution targets (from a single individual or general public), etc.
 
-While the number of messaging domains is growing rapidly, the prime purpose of spam remains the same: to reach out to the recipient by any means or to trick him into acting on the message by disguising it as a legitimate message. This leads to a very clear practical definition of spam from user's perspective as \textit{any unsolicited message}, whether it acknowledges its origin (e.g. advertisement) or is crafted to gain the user's trust (e.g. phishing and ransom attacks).
+While the number of messaging domains is growing rapidly, the prime purpose of spam remains the same: to reach out to the recipient by any means or to trick him into acting on the message by disguising it as a legitimate message. This leads to a very clear practical definition of spam from user's perspective as \textit{any unsolicited message}, whether it acknowledges its origin (e.g. unwanted advertisement) or is crafted to gain the user's trust (e.g. targeted phishing and ransom attacks).
 
 Given the large number of messaging systems to which spam is applicable, the problem of detection of unwanted correspondence has evolved along with distribution methods and now includes additional metadata like attached media and hyperlinks. While they may seem to increase the complexity of spam detection, they in fact give a basis for additional means of filtering which are often much easier to perform than the raw text classification.
 
-While the message metadata can provide additional information, in practice text classification is inevitable. It is usually the final step in classification process as it tends to be most expensive. Since the metadata processing is different from case to case, it is safe to say that the general problem of spam filtering comes down to the problem of binary text classification. Therefore, it makes sense to develop universal methods for spam classification of text messages that can be later adopted to any domain.
+While the message metadata can provide additional information, in practice text classification is inevitable. It is usually the final step in the whole process as it tends to be most computationally expensive. Since the metadata processing is different from case to case, it is safe to say that the general problem of spam filtering comes down to binary text classification. Therefore, it makes sense to develop universal methods for spam classification of text messages that can be later adopted to any domain.
 
-In this thesis we give an overview of a number of common statistical methods of performing spam filtering on text messages. In particular we focus on Bayesian classifier - one of the most common and effective approaches to spam filtering. We analyze existing approaches and develop a number of improvements that provide stronger theoretical results.
+A number of supervised machine learning techniques have been successfully applied to spam filtering. They, however, have not yet fully replaced regular expression based filtering in large scale commercial applications due to high requirements and sensitivity to false positives.
 
-Additionally, we analyze common problems for training on text messages like feature selection. Finally, we provide a performance comparison of the detailed algorithms in practice.
+In this thesis we give an overview of a number of statistical methods of performing spam filtering on text messages, including Bayesian classifiers, nearest neighbors, neural networks and SVM. The mainly focus on the high level algorithm and provide space and time complexity limits for each of the algorithms.
+
+The main focus of this work is the Bayesian classifier - one of the most common and effective approaches to spam filtering. We analyze an existing naive Bayesian approach and tackle some of the false assumptions that the algorithm relies on. We then give performance comparison between the resulting algorithm to the original classifier.
+
+Additionally, we give an brief overview of common problems in text message classification like feature selection. Finally, we provide a performance comparison of all detailed algorithms in practice.
 
 \newpage
 
@@ -86,23 +90,19 @@ In general, the problem of spam detection depends heavily on the application's d
 
 This, of course, applies to all messaging services. Maximum effectiveness can not be achieved without using all available data in addition to the message text. However, in most cases text analysis is the second stage preceded by a domain-specific filter. Therefore, we can further focus on statistical classification of spam for text messages without specific constraints.
 
-\newpage
+The entities we need to classify are text messages that are given in the form of strings. Raw strings are not convenient objects to handle in this case since most machine learning algorithms can only classify numerical objects or require a distance metric or other measure of similarity between the objects.
 
-\section{Feature Selection}
+Before proceeding with machine learning we have to convert all messages to numerical vectors called \textit{feature vectors}, and then classify these vectors. The simplest example of a feature vector is a binary vector each index of which specifies whether a certain word is present in the message or not. More complex feature vectors may contain frequencies of words.
 
-The entities we need to classify are text messages that are given in the form of strings. Raw strings are not convenient objects to handle in this case. Most machine learning algorithms can only classify numerical objects or otherwise require a distance metric or other measure of similarity between the objects.
+Extraction of features usually means that some information from the original message is lost. On the other hand, the way feature vector is chosen is crucial for the performance of the filter. However, feature vectors have to be sensitive to the class of the message. If the features are chosen so that there may exist a spam and a legitimate message with the same feature vector, any algorithm will make mistakes on it.
 
-Before proceeding with machine learning we have to convert all messages to numerical vectors called \textit{feature vectors}, and then classify these vectors. The simplest example of a feature vector is the vector of the numbers of occurrences of certain words in a message or the vector of flags specifying whether each word occurs in the message or not.
-
-Extraction of features usually means that some information from the original message is lost. On the other hand, the way feature vector is chosen is crucial for the performance of the filter. If the features are chosen so that there may exist a spam message and a legitimate mail with the same feature vector, then any machine learning algorithm will make mistakes no matter how good it is.
-
-Even the ultimate feature vector containing frequencies of \textit{all} words in the message does not preserve semantical information. This problem however is out of scope and is in the domain of Natural Language Processing. In most practical applications the most basic vector of word frequencies or its modification is sufficient.
+Preserving information with feature vectors is not trivial and usually means that some information is lost. Even the ultimate feature vector containing frequencies of \textit{all} words in the message does not preserve semantical information. This problem however is out of scope and is in the domain of Natural Language Processing. In most practical applications the most basic vectors of word frequencies or its modification are sufficient.
 
 Note that at the stage of feature selection it is possible to include the features from the available metadata along with features from message text. However, we will only focus on plain text as any of the described algorithms can be easily expanded to include more features.
 
 \newpage
 
-\section{Definitions}
+\section{Definitions and Notations}
 
 Let us give a number of definitions that will be commonly used.
 
@@ -187,11 +187,13 @@ Naturally, the loss of classifying the message correctly is zero, thus $\Loss(S,
 	If $\Lambda(x) > \lambda \dfrac{P(L)}{P(S)}$ classify as spam otherwise as legitimate message.
 \end{center}
 
-Here $\lambda = \dfrac{\Loss(L, S)}{\Loss(S, L)}$ is the additional parameter that specifies the risk of misclassifying legitimate messages as spam. As the value of $\lambda$ increases, the classifier produces fewer false positives.
+Here $\lambda = \dfrac{\Loss(L, S)}{\Loss(S, L)}$ is the additional parameter that specifies the risk of misclassifying legitimate messages as spam. As the value of $\lambda$ increases, the classifier produces fewer false positives. This makes Bayesian classifier especially appealing in e-mail spam filtering since false positives there are much more expensive than false negatives.
 
 While the classification process is straightforward, the practical applications of Bayes's classifier are limited by our ability to approximate the a-priori probabilities $P(x | c)$ and $P(c), c \in \{L, S\}$ from the training data. Therefore, while the Bayes's classifier is optimal in the sense of minimizing the loss of classification for given a-priori probabilities, the quality of spam detection depends on the feature selection and approximation of these probabilities.
 
-$P(L)$ and $P(S)$ can be easily approximated by the ratio of legitimate and spam messages respectively. $P(x | c)$ is non-trivial and depends on the contents of selected feature vector. Consider the simplest case where the feature vector $x_w$ is $1$ if the message contains $w$ and $0$ otherwise. Then the probability $P(x_w = 1 | S)$ can be approximated by the ratio of spam messages containing $w$ to the ratio of all spam messages in a training set. This is sufficient to be used by the Bayes's classifier, so we can outline the training and selection process for this model.
+$P(L)$ and $P(S)$ can be easily approximated by the ratio of legitimate and spam messages respectively. $P(x | c)$, however, is non-trivial and depends on the contents of selected feature vector.
+
+Consider the simplest case where the feature vector $x_w$ is $1$ if the message contains $w$ and $0$ otherwise. Then the probability $P(x_w = 1 | S)$ can be approximated by the ratio of spam messages containing $w$ to the ratio of all spam messages in a training set. This is sufficient to be used by the Bayes's classifier, so we can outline the training and selection process for this model.
 
 \textbf{Training process}
 
@@ -209,9 +211,9 @@ $P(L)$ and $P(S)$ can be easily approximated by the ratio of legitimate and spam
 	\item Use Bayes's decision rule to determine class of the message.
 \end{enumerate}
 
-Now we need to generalize this classifier to include more features than just the presence of a single word. The simplest way (and a very common one) is to choose a set of most common words $w_1, w_2, \dots, w_n$ and define the feature vector $x = (x_1, x_2, \dots, x_n), x_i = $, $x_i = 1$ if the message contains $w_i$, $x_i = 0$ otherwise.
+Now we need to generalize this classifier to include more features than just the presence of a single word. The simplest way (and the most used one) is to choose a subset of words $w_1, w_2, \dots, w_n$ and define the feature vector $x = (x_1, x_2, \dots, x_n)$, $x_i = 1$ if the message contains $w_i$, and $x_i = 0$ otherwise.
 
-The problem with this approach is that it requires calculation and storing of all possible values of the feature vector, and there are $2^n$ such vectors, which is not feasible. A common way to remove this requirement is to assume that the individual components of the vector are independent \cite{Tretyakov}. This assumption is not formally correct, but in practice it is a good compromise between formal correctness and computational requirements. We will consider other options in later chapters.
+The problem with this approach is that it requires calculation and storing of all possible values of the feature vector, which is not feasible since there are $2^n$ such vectors. A common way to remove this requirement is to assume that the individual components of the vector are independent \cite{Zhang}. This assumption is not formally correct, but in practice it is a good compromise between formal correctness and computational requirements. We will consider other options in later chapters.
 
 Because of independence of features:
 
@@ -231,11 +233,11 @@ This classifier is known as Naive Bayesian Classifier due to assumption of indep
 
 \begin{enumerate}
 	\item Determine feature vector $x$ for message $m$.
-	\item calculate $\Lambda(x)$ using the stored values $\Lambda_i(x_i)$.
+	\item Calculate $\Lambda(x)$ using the stored values $\Lambda_i(x_i)$.
 	\item Use Naive Bayes's decision rule to determine class of the message.
 \end{enumerate}
 
-In terms of word selection for the feature vector, usually words that are too common or too rare are excluded. For simple cases when performance is not critical, all words form the training set can be used. In later chapters we will consider ways to select words with maximum mutual information.
+In terms of word selection for the feature vector, usually most common and most rare words are excluded. For simple cases when performance is not critical, all words form the training set can be used. In later chapters we will consider ways to select words with maximum mutual information.
 
 Another benefit of naive Bayesian filter is that it is very easy to expand the feature vector to include additional available metadata. In case of e-mails, for example, it would be contents of e-mail headers. It is possible to include additional components either to the calculation of the a-priory probability of the vector or to combine the risk of Bayesian classifier with additional risk calculated from metadata when making a decision.
 
@@ -273,7 +275,7 @@ The $k$-NN classifier is widely applicable in general classification problems, p
 
 Consistency of $k$-NN rule allows to increase the quality by increasing the size of the training set. Stone theorem guarantees that as the size of the training set increases with constant value of $k$, the selection of messages for the training set does not matter. In addition to this, small values of $k$ prevent quadratic complexity $O(n^2)$ when computing nearest neighbors.
 
-Despite theoretical results, $k$-NN classifiers are performing worse than competition in practice in spam classification and are computationally expensive.
+Despite theoretical results, $k$-NN classifiers are performing worse than competition in practice for spam classification and are computationally expensive.
 
 \newpage
 
@@ -292,8 +294,7 @@ The learning process for a perceptron is iterative. The initial values of parame
 $$w_{k+1} = w_k + cx$$,
 $$b_{k+1} = b_k + c$$.
 
-The algorithm terminates when a decision function that correctly classifies
-all training set is found. If the training set is linearly separable, the perceptron algorithm converges. It is known as Perceptron Convergence Theorem proven by Frank Rosenblatt in 1962 \cite{Cristianini}. If, however, the set is not linearly separable, the algorithm will never converge. In this case it is possible to still use the perceptron, but the training loop needs to stop when the number of misclassification becomes small.
+The algorithm terminates when a decision function that correctly classifies all training set is found. If the training set is linearly separable, the perceptron algorithm converges. It is known as Perceptron Convergence Theorem proven by Frank Rosenblatt in 1962 \cite{Cristianini}. If, however, the set is not linearly separable, the algorithm will never converge. In this case it is possible to still use the perceptron, but the training loop needs to stop when the number of misclassification becomes small.
 
 We can now outline the training and classification phases of the perceptron.
 
@@ -335,12 +336,12 @@ Because of the above reasons and due to the large number of parameters that requ
 
 \section{SVM Classifier}
 
-Support Vector Machines (SVM) is a class of widely used algorithms for classification and regression. The theoretical foundation of SVM is the Statistical Learning Theory that gives certain guarantees of performance. Let us consider classification problem with SVM for linearly separable data.
+Support Vector Machines (SVM) is a class of widely used algorithms for classification and regression. The theoretical foundation of SVM is the Statistical Learning Theory that gives certain guarantees of performance \cite{Cristianini}. Let us consider classification problem with SVM for linearly separable data.
 
-SVM works in a similar manner to perceptron in terms of finding a linear boundary that separates test data according to their classes. However, the purpose of SVM is not to find any of these boundaries if they exist, but to find the maximal margin separating hyperplane, for which the distance to the closest training sample is maximal.
+SVM works in a similar manner to perceptron in terms of finding a linear boundary that separates test data according to their classes. However, the purpose of SVM is not to find any of these boundaries if they exist, but to find the maximal margin separating hyperplane, with maximum distance to the nearest training sample.
 
 \begin{definition}
-	Let $X = \{(x_i, c_i)\}$, $x_i \in \re^n$, $c_i \in \{-1, +1\}$ be the set of training samples. Suppose $(w, b)$ is a separating hyperplane $sign(w^T x_i + b) = c_i$ for all $1 \leq i \leq k$. The margin $m_i$ of a training sample $(x_i, c_i)$ with respect to the separating hyperplane is the distance from $x_i$ to the hyperplane
+	Let $X = \{(x_i, c_i)\}$, $x_i \in \re^n$, $c_i \in \{-1, +1\}$ be the set of training samples and $(w, b)$ denote a separating hyperplane $sign(w^T x_i + b) = c_i$ for all $1 \leq i \leq k$. The margin $m_i$ of a training sample $(x_i, c_i)$ with respect to the separating hyperplane is the distance from $x_i$ to the hyperplane
 	
 	$$m_i = \dfrac{|w^T x_i + b|}{||w||}$$.
 	
@@ -351,7 +352,7 @@ SVM works in a similar manner to perceptron in terms of finding a linear boundar
 	The maximal margin separating hyperplane for training set $X$ is the separating hyperplane with maximal margin with respect to the training set \cite{Tretyakov}.
 \end{definition}
 
-Because the hyperplane given by parameters $(x, b)$ is the same as the hyperplane given by parameters $(kx, kb)$, we can safely bound our search by only considering canonical hyperplanes for which $\min_i |w^T x_i + b| = 1$. It is possible to show that the optimal canonical hyperplane has minimal $||w||$, and that in order to find a canonical hyperplane it suffices to solve the minimization problem: minimize $\frac{1}{2} w^T w$ under conditions
+The hyperplane given by parameters $(x, b)$ is the same as the hyperplane given by parameters $(kx, kb)$, hence we can safely bound our search by only considering canonical hyperplanes for which $\min_i |w^T x_i + b| = 1$. The optimal canonical hyperplane has minimal $||w||$, and that in order to find a canonical hyperplane it suffices to solve the minimization problem: minimize $\frac{1}{2} w^T w$ under conditions
 
 $$c_i(w^T x_i + b) \ge 1, i = 1, 2, \dots, k$$
 
@@ -359,9 +360,9 @@ The problem may be transformed to a certain dual form: maximize
 
 $$L_d(\alpha) = \sum_{i = 1}^{k} \alpha_i - \frac{1}{2} \sum_{i, j = 1}^{k} \alpha_i \alpha_j c_i c_j x_i^T x_j$$
 
-with respect to dual variables $\alpha = (\alpha_1, \alpha_2, \dots, \alpha_k)$, $\alpha_i \ge 0 \forall i$ and $\sum_{i = 1}^{k} \alpha_i c_i = 0$.
+with respect to dual variables $\alpha = (\alpha_1, \alpha_2, \dots, \alpha_k)$, $\alpha_i \ge 0 \forall i$ and $\sum_{i = 1}^{k} \alpha_i c_i = 0$ \cite{Cristianini}.
 
-This is a classical quadratic optimization problem. It mostly has a guaranteed unique solution, and there are efficient algorithms for finding this solution. Once we have found the solution $\alpha$, the parameters $(w_o, b_o)$ of the optimal hyperplane are determined as
+The resulting problem is a classical quadratic optimization problem, for which there exist efficient solutions. Once we have found the solution $\alpha$, parameters $(w_o, b_o)$ of the optimal hyperplane are determined as
 
 $$w_o = \sum_{i = 1}^{k} \alpha_i c_i x_i$$,
 
@@ -369,7 +370,7 @@ $$b_o = \frac{1}{c_m} - w_o^T x_k$$
 
 where $m$ is an arbitrary index for which $\alpha_m \ne 0$.
 
-The resulting hyperplane is defined by the training samples that are at minimal distance to it, so called \textit{support vectors}. Training process is quite complex, while classification is extremely simple.
+The resulting hyperplane is defined by the training samples that are at minimal distance to it, so called \textit{support vectors}. Training process is quite complex, while classification is straightforward.
 
 \textbf{Training process}
 
@@ -384,6 +385,8 @@ The resulting hyperplane is defined by the training samples that are at minimal 
 \begin{enumerate}
 	\item For message with feature vector $x$ classify it as $sign(w^T x + b)$.
 \end{enumerate}
+
+Implementation of SVM is non-trivial, in particular because of the quadratic optimization problem. In case of spam classification, an easy and quick classification process is undoubtedly a benefit. However, in many cases of spam filtering the training set needs to be regularly updated, which is a hard procedure with SVM.
 
 \newpage
 
@@ -610,16 +613,45 @@ One potential modification in this direction would be to split the features (wor
 
 \chapter{Feature Selection}
 
-\section{Mutual Information Based Feature Selection}
+It was mentioned earlier that performance of the classifier is limited by the selection of words that compose the feature vector. Performance of all methods directly depends on the number of features, so we can not afford to include all words encountered in the training set. The first reason is, obviously, performance and storage requirements. The second reason is compatibility between different versions of the same classifier. In fact, the training set can be updated after discovery of each new distinct spam message, and in practice this is happening every second. In order to achieve the best performance, the algorithm has to be updated regularly with the latest data. Addition or exclusion of features or changing their order requires the whole training process to be repeated. On the contrary, if the feature vector is fixed, many of the algorithms described can be easily updated with new elements of the training set.
 
-Words, formulas.
+Finally, the main problem of feature selection is to find a subset of words that would maximize effectiveness of the classifiers and contain the most relevant data. Most common words are likely to have equal presence in both $S$ and $L$, so they are not the best candidates. So are the most rare words, in fact, words that occur only in a small number of messages (e.g. 3 or less) are often excluded as they do not provide statistically reliable data. Intuitively we would want to find the words that are significantly more common in either $S$ or $L$.
+
+Essentially we want to select words that contain the maximum amount of information about the class of an average message. The measure of \textit{mutual information} is commonly used for that purpose \cite{Sahami}. Mutual information between the feature $x_i$ and the class $c$ is given by
+
+$$MI(x_i, c) = \sum_{x_i=0,1} \sum_{c=L,S} P(x_i, c) \log \frac{P(x_i, c)}{P(x_i) P(c)}$$
+
+where $\log$ denotes natural logarithm.
+
+Before we proceed with the full algorithm, recall that the modified versions of Bayesian classifier start with the conditional probability of the first features, but might use the unconditional probabilities of the last features if the corresponding conditional probability drops to $0$. We would naturally want to start with the most relevant features and leave the least important ones in the end. In other words, we need the features to be sorted by relevance. The mutual information may serve as the perfect measure of relevance, so we can sort the top $n$ features by it. Note that it noes not affect other algorithms in any way.
+
+Let us outline the whole algorithm. Suppose we are given the training set $T$ with the set of words $W$, $|W| = N$ and the limit on the number of features $n$. We now have sufficient information to detail the selection algorithm.
+
+\textbf{Feature selection process}
+
+\begin{enumerate}
+	\item Calculate $P(c), c \in \{L, S\}$. Time complexity: $O(k)$.
+	\item For all $x_i \in W$ calculate $P(x_i)$. Time complexity: $O(kN)$.
+	\item For all $x_i \in W$ and $c \in \{L, S\}$ calculate $P(x_i, c)$. Time complexity: $O(kN)$.
+	\item Find the top $n$ features $x_i$ with highest value of $max(MI(x_i, L), MI(x_i, S))$ sorted by mutual information in descending order. Time complexity: $O(N \log(n))$.
+\end{enumerate}
+
+Total complexity: $O(kN + N \log(n))$.
+
+Let us provide an algorithm that meets the outlined specifications. For $P(c), c \in \{L, S\}$ we only need to know the sizes of $T_L$ and $T_S$, which may be either known (thus yielding $O(1)$) or computed while iterating through $T$ ($O(k)$).
+
+$P(x_i)$ involves the number of messages with given $x_i$ and the total number of messages $k$. Both can be counted while doing a loop through all messages in $T$ and for each $1 \le i \le N$ storing the number of messages with $x_i = 1$ in the table. Same applies for $P(x_i, c)$, only this time two tables are required, one for legitimate messages and one for spam.
+
+Finally, once we have all probabilities computed, finding the $n$ features with maximum mutual information in descending order can be done using a minimum priority queue. The algorithm begins with an empty queue. Then for each feature $x_i$ $MI(x_i, L)$ and $MI(x_i, S)$ are calculated, and $x_i$ along with $max(MI(x_i, L), MI(x_i, L))$ is pushed into the priority queue. If the queue size exceeds $n$, one message is removed from it. That way the top $n$ features are kept in the queue throughout the process. Because the size of the queue stays between $0$ and $n + 1$, each operation takes $O(\log(n + 1))$. The number of operations performed on the queue is $N$, thus the overall complexity of this step is $O(N \log(n))$.
+
+Once all $x_i$ are processed, the elements are popped from the queue and added to the feature vector in reverse order. This gives us the $n$ distinct features with maximum mutual information sorted from largest to smallest.
+
+It is noting that although this process allows to select the limited number of most relevant features, it still does not completely solve the problem of outdated feature vectors. As the training set expands, the changes in mutual information of certain features can change the optimal feature vector. Of course, for substantially large initial training sets this is not a problem, however it still makes sense to re-select feature vector after significant updates to the training set.
 
 \newpage
 
 
 \chapter{Performance Comparison in Practice}
-
-\section{Classification Quality}
 
 Words, tables, graphs, pictures, code.
 
@@ -638,17 +670,22 @@ Words.
 
 \begin{thebibliography}{30}
 
-\bibitem{Tretyakov} Konstantin Tretyakov. Machine Learning Techniques in Spam Filtering. Institute of Computer Science, University of Tartu. Data Mining Problem-oriented Seminar, MTAT.03.177, May 2004, pp. 60-79.
+\bibitem{Tretyakov} K. Tretyakov 2004. Machine Learning Techniques in Spam Filtering. Institute of Computer Science, University of Tartu. Data Mining Problem-oriented Seminar, MTAT.03.177, May 2004, pp. 60-79.
 
-\bibitem{Kecman} V. Kecman. Learning and Soft Computing. 2001, The MIT Press.
+\bibitem{Christina} V.Christina, S.Karpagavalli, G.Suganya 2010. Email Spam Filtering using Supervised Machine Learning Techniques. 2010, (IJCSE) International Journal on Computer Science and Engineering Vol. 02, No. 09, 2010, 3126-3129.
 
-\bibitem{Haykin} S. Haykin. Neural Networks: A Comprehensive Foundation. 1998, Prentice
+\bibitem{Kecman} V. Kecman 2001. Learning and Soft Computing. 2001, The MIT Press.
+
+\bibitem{Zhang} H. Zhang 2004. The Optimality of Naive Bayes. Faculty of Computer Science, University of New Brunswick Fredericton.
+
+\bibitem{Sahami} M. Sahami, S. Dumais, D. Heckerman, and E. Horvitz 1998. A Bayesian approach to filtering junk email., AAAI Workshop on Learning for Text Categorization, July 1998, Madison, Wisconsin. AAAI Technical Report WS-98-05.
+
+\bibitem{Haykin} S. Haykin 1998. Neural Networks: A Comprehensive Foundation. 1998, Prentice
 Hall.
 
-\bibitem{Cristianini} N. Cristianini, J. Shawe-Taylor. An Introduction to Support Vector Machines and other kernel-based learning methods. 2003, Cambridge University Press. http://www.support-vector.net
+\bibitem{Cristianini} N. Cristianini, J. Shawe-Taylor 2003. An Introduction to Support Vector Machines and other kernel-based learning methods. 2003, Cambridge University Press. http://www.support-vector.net
 
-\bibitem{Carreras} Xavier Carreras, Lluis Marquez. Boosting Trees for AntiSpam
-Email Filtering. TALP Research Center, LSI Department, Universitat Politecnica de Catalunya.
+\bibitem{Zaffalon} M. Zaffalon, M. Hutter 2002. Robust Feature Selection by Mutual Information Distributions. https://arxiv.org/ftp/arxiv/papers/1408/1408.1487.pdf
 
 \end{thebibliography}
 
