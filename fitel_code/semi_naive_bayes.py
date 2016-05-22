@@ -93,8 +93,12 @@ class NaiveBayes:
     @staticmethod
     def divide(nom, den):
         if den == 0.0:
-            return sys.float_info.max
-        return nom / den
+            if nom == 0.0:
+                return 1.0
+            else:
+                return sys.float_info.max
+        else:
+            return nom / den
 
     def is_spam(self, vector):
         likelihood = self.divide(self.p_spam(vector), self.p_legitimate(vector))

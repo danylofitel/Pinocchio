@@ -653,7 +653,9 @@ It is noting that although this process allows to select the limited number of m
 
 \chapter{Performance Comparison in Practice}
 
-Words, tables, graphs, pictures, code.
+The PU1 corpus spam database created by Ion Androutsopoulos \cite{Androutsopoulos} was used for testing of the modified Bayesian classifier against naive Bayesian classifier. Results of the other algorithms for this spam database were taken from \cite{Tretyakov}. The corpus contains 1099 messages, out of which 481 are spam. The messages are divided into 10 parts, which allows to perform cross-validation with using 9 parts for training and 1 for testing.
+
+The messages come in preprocessed form containing only the words from subject and body, each word is encoded with an integer. The database allows to choose among 4 flavors: the original messages, messages processed with stop-list (100 most frequent English words removed), messages processed with the  lemmatizer (each word converted to the base form) and finally the version with both lemmatizer and stop-list applied. In practice the database processed with both lemmatizer and stop-list performs best for most of the algorithms, so we will only use this version. It contains 21611 distinct words which we will use as features for modified Bayesian classifier.
 
 \newpage
 
@@ -661,7 +663,9 @@ Words, tables, graphs, pictures, code.
 \chapter*{Conclusion}
 \addcontentsline{toc}{chapter}{Conclusion}
 
-Words.
+In this thesis we analyzed a number of common statistical classifier of text spam. For naive Bayesian classifier we proposed a number of improvements that tackle formally incorrect assumptions about feature independence. The resulting classifier performed better than the naive classifier with comparable speed, but additional storage.
+
+When compared to other approaches, Bayesian classifier does produce better results than k nearest neighbors, however it is usually behind the perceptron and SVM. It still has a number of benefits. Firstly, Bayesian classifier allows to easily tweak the relative cost of false positives, which can be a critical requirement in spam filtering. Secondly, the quality of classification only improves with larger training sets, when for linear neural net classifiers it might cause problems with overfitting.
 
 \newpage
 
@@ -677,6 +681,8 @@ Words.
 \bibitem{Kecman} V. Kecman 2001. Learning and Soft Computing. 2001, The MIT Press.
 
 \bibitem{Zhang} H. Zhang 2004. The Optimality of Naive Bayes. Faculty of Computer Science, University of New Brunswick Fredericton.
+
+\bibitem{Androutsopoulos} I. Androutsopoulos 2000. An Experimental Comparison of Naive Bayesian and Keyword-Based Anti-Spam Filtering with Personal E-mail Messages.
 
 \bibitem{Sahami} M. Sahami, S. Dumais, D. Heckerman, and E. Horvitz 1998. A Bayesian approach to filtering junk email., AAAI Workshop on Learning for Text Categorization, July 1998, Madison, Wisconsin. AAAI Technical Report WS-98-05.
 
