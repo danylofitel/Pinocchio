@@ -655,7 +655,7 @@ It is noting that although this process allows to select the limited number of m
 
 The PU1 corpus spam database created by Ion Androutsopoulos \cite{Androutsopoulos} was used for testing of the modified Bayesian classifier against naive Bayesian classifier. Results of the other algorithms for this spam database were taken from \cite{Tretyakov}. The corpus contains 1099 messages, out of which 481 are spam. The messages are divided into 10 parts, which allows to perform cross-validation with using 9 parts for training and 1 for testing.
 
-The messages come in preprocessed form containing only the words from subject and body, each word is encoded with an integer. The database allows to choose among 4 flavors: the original messages, messages processed with stop-list (100 most frequent English words removed), messages processed with the  lemmatizer (each word converted to the base form) and finally the version with both lemmatizer and stop-list applied. In practice the database processed with both lemmatizer and stop-list performs best for most of the algorithms, so we will only use this version. It contains 21611 distinct words which we will use as features for modified Bayesian classifier.
+The messages come in preprocessed form containing only the words from subject and body, each word is encoded with an integer. The database allows to choose among 4 flavors: the original messages, messages processed with stop-list filter (100 most frequent English words removed), messages processed with the  lemmatizer (each word converted to the base form) and finally the version with both lemmatizer and stop-list filter applied. In practice the database processed with both lemmatizer and stop-list performs best for most of the algorithms \cite{Tretyakov}, so we will only use this version. It contains 21611 distinct words which we will use as features for modified Bayesian classifier.
 
 \newpage
 
@@ -663,9 +663,11 @@ The messages come in preprocessed form containing only the words from subject an
 \chapter*{Conclusion}
 \addcontentsline{toc}{chapter}{Conclusion}
 
-In this thesis we analyzed a number of common statistical classifier of text spam. For naive Bayesian classifier we proposed a number of improvements that tackle formally incorrect assumptions about feature independence. The resulting classifier performed better than the naive classifier with comparable speed, but additional storage.
+The problem targeted in this thesis is statistical approaches to spam filtering in the most generic case, without domain specific properties. These constraints allowed to apply a number of different approaches under identical requirements, which both makes the solutions more universal and enables direct comparisons of different methods.
 
-When compared to other approaches, Bayesian classifier does produce better results than k nearest neighbors, however it is usually behind the perceptron and SVM. It still has a number of benefits. Firstly, Bayesian classifier allows to easily tweak the relative cost of false positives, which can be a critical requirement in spam filtering. Secondly, the quality of classification only improves with larger training sets, when for linear neural net classifiers it might cause problems with overfitting.
+In particular we analyzed a number of common statistical classifiers of text spam. The main focus was naive Bayesian classifier. While it guarantees to minimize the average classification risk, it does rely on an incorrect assumption of independence of features. A number of improvements that tackle this assumption were proposed, including partial optimizations that allow to balance guarantees and classification speed.
+
+Finally, the resulting classifier was compared with original Bayesian classifier as well as other commonly used methods. When compared to other approaches, the updated Bayesian classifier does produce better results than k nearest neighbors, however it is usually behind the perceptron and SVM. It still has a number of benefits over other methods. Firstly, Bayesian classifier allows to easily tweak the relative cost of false positives, which can be a critical requirement in spam filtering. Secondly, the quality of classification only improves with larger training sets, when for linear neural net classifiers it might cause problems with overfitting.
 
 \newpage
 
