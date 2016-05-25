@@ -4,31 +4,43 @@ import re
 __author__ = 'danylofitel'
 
 
-def get_training_data():
-    regex = re.compile("\d*")
+def get_features(filename):
+    features = []
+    for i, line in enumerate(open(filename)):
+        features.append(int(line))
+    return features
 
-    words = []
 
-    for filename in glob.glob("C:\\spam\\all\\*.txt"):
+def is_legitimate_message_file(filename):
+    return "legit" in filename
+
+
+def get_data(features, directory):
+    regex = re.compile("\d+")
+
+    spam_messages = []
+    legitimate_messages = []
+
+    for filename in glob.glob(directory):
+        message_is_legitimate = is_legitimate_message_file(filename)
+        words = {}
+
         for i, line in enumerate(open(filename)):
             for match in regex.findall(line):
-                words.append(match.zfill(5))
+                words[int(match)] = None
 
-    sorted_words = sorted(set(words))
-    for w in sorted_words:
-        print w
+        feature_vector = []
+        for feature in features:
+            feature_vector.append(1 if feature in words else 0)
 
-    return
+        if message_is_legitimate:
+            legitimate_messages.append(feature_vector)
+        else:
+            spam_messages.append(feature_vector)
 
-    prev_number = -1
-    for number in sorted_words:
-        current_number = int(number)
-        if current_number - prev_number != 1:
-            print current_number
-        prev_number = current_number
+    return legitimate_messages, spam_messages
 
 
-def get_test_data():
-    return [], []
-
-get_training_data()
+features = get_features("C:\\spam\\features.txt")
+training_data = get_data(features, "C:\\spam\\training\\*.txt")
+test_data = get_data(features, "C:\\spam\\testing\\*.txt")
