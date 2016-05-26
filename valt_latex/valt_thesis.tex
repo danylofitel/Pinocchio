@@ -127,11 +127,15 @@ Firstly, an extraction function $extr$ must be defined. After feature extraction
 
 At this moment, I shall split the data into training and cross-validation set. Or in other words training and test data. Now $f$ must be found by a classification algorithm on the training set.
 
-The ultimate goal is to obtain a decision function $F : R \rightarrow \{extr, f\}$ that would minimize $\dfrac1 {m_{test}} \sum_{i=1}^{m_{test}} (f(x_{i})- y_{i})^2$ for training data. 
+The ultimate goal is to obtain a decision function $F : R \rightarrow \{extr, f\}$ that would maximize F1 score for training data. 
 
+The F1 score, commonly used in information retrieval, measures accuracy using the statistics precision p and recall r. Precision is the ratio of true positives (tp) to all predicted positives (tp + fp). Recall is the ratio of true positives to all actual positives (tp + fn). The F1 score is given by
 
-TODO precission and recall
-TODO describe F1-score.
+$$F1 = 2 \dfrac{precision * recall} {(precision + recall)}$$
+
+Hence, F1 score can be interpreted as a weighted average of the precision and recall.
+
+Given the fact that I am considering a problem of multiclass classification, I am going to use averages of precision, recall and F1 score as a measure of classification quality.
 
 \newpage
 
@@ -156,7 +160,7 @@ In practice KNN algorithm performs worse than other algorithms. Therefore KNN mo
 
 \section{Naive Bayes}
 
-Naive Bayes algorithm is a classification algorithm based on Bayes' theorems, and can be used for both exploratory and predictive modeling. The word naive in the name Naive Bayes derives from the fact that the algorithm uses Bayesian techniques but does not take into account dependencies that may exist. This algorithm is less computationally intense than most other classification algorithms, and therefore is useful for quickly generating mining models to discover relationships between input columns and predictable columns %\cite{mic}.
+Naive Bayes algorithm is a classification algorithm based on Bayes' theorems, and can be used for both exploratory and predictive modeling. The word naive in the name Naive Bayes derives from the fact that the algorithm uses Bayesian techniques but does not take into account dependencies that may exist. This algorithm is less computationally intense than most other classification algorithms, and therefore is useful for quickly generating mining models to discover relationships between input columns and predictable columns \cite{mic}.
 
 Naive Bayes relies on very simple representation of the document - Bag of words.
 
@@ -297,7 +301,7 @@ Summary:
   \item Very fast algorithm, low storage requirements
   \item Robust to irrelevent features: Irrelevant features cancel each other without affecting results.
   \item Very good at domains with many equally important features
-  \item Optimal if idependence assumption is true. Of course it is rare.
+  \item Optimal if independence assumption is true.
 \end{itemize}
 
 \newpage
@@ -310,7 +314,7 @@ One way of looking at multiresponse linear regression is to imagine that it appr
 
 Multiresponse linear regression often yields good results in practice. However, it has two drawbacks. First, the membership values it produces are not proper probabilities because they can fall outside the range 0 to 1. Second, least-squares regression assumes that the errors are not only statistically independent but are also normally distributed with the same standard deviation, an assumption that is blatently violated when the method is applied to classification problems because the observations only ever take on the values 0 and 1.
 
-A related statistical technique called logistic regression does not suffer from these problems. Instead of approximating the 0 and 1 values directly, thereby risking illegitimate probability values when the target is overshot, logistic regression builds a linear model based on a transformed target variable %\cite{Witten and Frank|.
+A related statistical technique called logistic regression does not suffer from these problems. Instead of approximating the 0 and 1 values directly, thereby risking illegitimate probability values when the target is overshot, logistic regression builds a linear model based on a transformed target variable \cite{Witten and Frank}.
 
 In logistic regression the probability of classes is estimated in the following way:
 
@@ -323,9 +327,17 @@ The goal function, which must be minimized, is:
 
 $$\sum_{i}^{m} {(1 - x_i) log(1 - P[1 | w_1, w_2, ... w_n]) + x_i log(P[(1 | w_1, w_2, ... w_n])}$$
 
-In the multiclass case, the training algorithm uses the one-vs-rest. One-vs-the-rest is also known as one-vs-all. This strategy consists in fitting one classifier per class. For each classifier, the class is fitted against all the other classes. In addition to its computational efficiency (only $n$ classes classifiers are needed), one advantage of this approach is its interpretability. Since each class is represented by one and one classifier only, it is possible to gain knowledge about the class by inspecting its corresponding classifier. This is the most commonly used strategy for multiclass classification and is a fair default choice %\cite{McKinney}.
+In the multiclass case, the training algorithm uses the one-vs-rest. One-vs-the-rest is also known as one-vs-all. This strategy consists in fitting one classifier per class. For each classifier, the class is fitted against all the other classes. In addition to its computational efficiency (only $n$ classes classifiers are needed), one advantage of this approach is its interpretability. Since each class is represented by one and one classifier only, it is possible to gain knowledge about the class by inspecting its corresponding classifier. This is the most commonly used strategy for multiclass classification and is a fair default choice \cite{McKinney}.
 
-In comparison with Naive Bayes algorithm Logistic regression is better at Domains with many non-equally important features. Moreover, Logistic regression is as well robust to irrelevant features when regularization is properly set %\cite{kevinPMuprhy}.
+However, it is also possible to use Multinomial logistic regression in the multiclass case.
+
+TODO describe how it works in a nushell.
+
+In natural language processing, multinomial LR classifiers are commonly used as an alternative to naive Bayes classifiers because they do not assume statistical independence of the random variables (commonly known as features) that serve as predictors. However, learning in such a model is slower than for a naive Bayes classifier, and thus may not be appropriate given a very large number of classes to learn. In particular, learning in a Naive Bayes classifier is a simple matter of counting up the number of co-occurrences of features and classes.
+
+TODO cite  Bishop, Christopher M. (2006). Pattern Recognition and Machine Learning. Springer.
+
+In comparison with Naive Bayes algorithm Logistic regression is better at Domains with many non-equally important features. Moreover, Logistic regression is as well robust to irrelevant features when regularization is properly set \cite{kevinPMuprhy}.
 
 There are also drawbacks, for instance, Logistic regression is really fast algorithm, still Naive Bayes is faster.
 
