@@ -9,7 +9,7 @@ class Node:
         self.children = {}
 
 
-class NaiveBayes:
+class SemiNaiveBayes:
 
     # Lambda = Loss(L, S) /  Loss(S,L) is the additional parameter that
     # specifies the risk of misclassifying legitimate messages as spam.
@@ -85,10 +85,13 @@ class NaiveBayes:
             node.count += 1
             next_node = None
             if message[i] in node.children:
+                next_node = node.children[message[i]]
+            else:
                 next_node = Node()
                 node.children[message[i]] = next_node
 
             node = next_node
+        node.count += 1
 
     @staticmethod
     def divide(nom, den):
@@ -144,11 +147,3 @@ class NaiveBayes:
                 return probability
 
         return probability
-
-# legit, shit
-legitimate = [[1, 0]]
-spam = [[0, 1]]
-
-classifier = NaiveBayes(1, legitimate, spam)
-print classifier.is_spam([1, 0])
-print classifier.is_spam([0, 1])

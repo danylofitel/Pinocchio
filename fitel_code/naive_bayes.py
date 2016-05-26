@@ -83,11 +83,3 @@ class NaiveBayes:
             likelihood *= self.likelihood_0[i] if vector[i] == 0 else self.likelihood_1[i]
 
         return likelihood > self.threshold
-
-# legit, shit
-legitimate = [[1, 0]]
-spam = [[0, 1]]
-
-classifier = NaiveBayes(1, legitimate, spam)
-print classifier.is_spam([1, 0])
-print classifier.is_spam([0, 1])
