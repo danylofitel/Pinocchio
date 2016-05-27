@@ -75,7 +75,7 @@ In this thesis we give an overview of a number of statistical methods of perform
 
 The main focus of this work is the Bayesian classifier - one of the most common and effective approaches to spam filtering. We analyze an existing naive Bayesian approach and tackle some of the false assumptions that the algorithm relies on. We then give performance comparison between the resulting algorithm to the original classifier.
 
-Additionally, we give an brief overview of common problems in text message classification like feature selection. Finally, we provide a performance comparison of all detailed algorithms in practice.
+Additionally, we give an brief overview of common problems in text message classification like feature selection. Finally, we provide a performance comparison of detailed algorithms in practice.
 
 \newpage
 
@@ -98,7 +98,7 @@ Extraction of features usually means that some information from the original mes
 
 Preserving information with feature vectors is not trivial and usually means that some information is lost. Even the ultimate feature vector containing frequencies of \textit{all} words in the message does not preserve semantical information. This problem however is out of scope and is in the domain of Natural Language Processing. In most practical applications the most basic vectors of word frequencies or its modification are sufficient.
 
-Note that at the stage of feature selection it is possible to include the features from the available metadata along with features from message text. However, we will only focus on plain text as any of the described algorithms can be easily expanded to include more features.
+Note that at the stage of feature selection it is possible to include the features from the available metadata along with features from message text. However, we will only focus on plain text as any of the described algorithms can be easily expanded.
 
 \newpage
 
@@ -118,7 +118,7 @@ $T = \{(m_1, c_1), (m_2, c_2), ..., (m_k, c_k)\}, m_i \in M, c_i \in \{S, L\}, 1
 
 $T_c = T \cap c, c \in \{L, S\}$ - training set of legitimate ($T_L$) or spam ($T_S$) messages.
 
-$x = (x_1, x_2, \dots, x_n), x_i \in \{0, 1\}, 1 \leq i \leq n$ - binary feature vector of a message. Each coordinate specifies whether a specific feature applies to the message.
+$x = (x_1, x_2, \dots, x_n), x_i \in \{0, 1\}, 1 \leq i \leq n$ - binary feature vector of a message. Each coordinate specifies whether a specific feature applies to the message (i.e. whether the corresponding word is present in the message).
 
 $f : M \rightarrow \{S, L\}$ - classification function that given a message determines its class. This function is the ultimate goal of any classification algorithm.
 
@@ -352,7 +352,7 @@ SVM works in a similar manner to perceptron in terms of finding a linear boundar
 	The maximal margin separating hyperplane for training set $X$ is the separating hyperplane with maximal margin with respect to the training set \cite{Tretyakov}.
 \end{definition}
 
-The hyperplane given by parameters $(x, b)$ is the same as the hyperplane given by parameters $(kx, kb)$, hence we can safely bound our search by only considering canonical hyperplanes for which $\min_i |w^T x_i + b| = 1$. The optimal canonical hyperplane has minimal $||w||$, and that in order to find a canonical hyperplane it suffices to solve the minimization problem: minimize $\frac{1}{2} w^T w$ under conditions
+The hyperplane given by parameters $(x, b)$ is the same as the hyperplane given by parameters $(kx, kb)$, hence we can only consider hyperplanes for which $\min_i |w^T x_i + b| = 1$. The optimal canonical hyperplane has minimal value of $||w||$, and that in order to find a canonical hyperplane we need to solve the minimization problem: minimize $\frac{1}{2} w^T w$ given conditions
 
 $$c_i(w^T x_i + b) \ge 1, i = 1, 2, \dots, k$$
 
@@ -360,7 +360,7 @@ The problem may be transformed to a certain dual form: maximize
 
 $$L_d(\alpha) = \sum_{i = 1}^{k} \alpha_i - \frac{1}{2} \sum_{i, j = 1}^{k} \alpha_i \alpha_j c_i c_j x_i^T x_j$$
 
-with respect to dual variables $\alpha = (\alpha_1, \alpha_2, \dots, \alpha_k)$, $\alpha_i \ge 0 \forall i$ and $\sum_{i = 1}^{k} \alpha_i c_i = 0$ \cite{Cristianini}.
+with respect to dual variables $\alpha = (\alpha_1, \alpha_2, \dots, \alpha_k)$, $\alpha_i \ge 0 \forall i$ and $\sum_{i = 1}^{k} \alpha_i c_i = 0$ \cite{Tretyakov}.
 
 The resulting problem is a classical quadratic optimization problem, for which there exist efficient solutions. Once we have found the solution $\alpha$, parameters $(w_o, b_o)$ of the optimal hyperplane are determined as
 
@@ -599,7 +599,8 @@ Time complexity: $O(nk)$. Space complexity: $O(dk)$.
 
 \begin{enumerate}
 	\item Determine feature vector $x$ for message $m$. Time complexity: $O(|m|)$ where $|m|$ is the number of words in $m$.
-	\item Calculate $P(x | L) = \prod_{i=1}^{n} P(x_i | \bigcap_{j = 1}^{\min(i - 1, d)} x_j, L)$ and $P(x | S) = \prod_{i=1}^{n} P(x_i | \bigcap_{j = 1}^{\min(i - 1, d)} x_j, S)$ using the corresponding paths in the tries. Time complexity: $O(n)$.
+	\item Calculate $P(x | L) = \prod_{i=1}^{n} P(x_i | \bigcap_{j = 1}^{\min(i - 1, d)} x_j, L)$ using the corresponding paths in the tries. Time complexity: $O(n)$
+	\item Calculate $P(x | S) = \prod_{i=1}^{n} P(x_i | \bigcap_{j = 1}^{\min(i - 1, d)} x_j, S)$ using the corresponding paths in the tries. Time complexity: $O(n)$.
 	\item Calculate $\Lambda(x) = \frac{P(x | S)}{P(x | L)}$. Time complexity: $O(1)$.
 	\item Use Bayes's decision rule to determine class of the message. Time complexity: $O(1)$.
 \end{enumerate}
@@ -633,7 +634,7 @@ Let us outline the whole algorithm. Suppose we are given the training set $T$ wi
 	\item Calculate $P(c), c \in \{L, S\}$. Time complexity: $O(k)$.
 	\item For all $x_i \in W$ calculate $P(x_i)$. Time complexity: $O(kN)$.
 	\item For all $x_i \in W$ and $c \in \{L, S\}$ calculate $P(x_i, c)$. Time complexity: $O(kN)$.
-	\item Find the top $n$ features $x_i$ with highest value of $max(MI(x_i, L), MI(x_i, S))$ sorted by mutual information in descending order. Time complexity: $O(N \log(n))$.
+	\item Find the top $n$ features $x_i$ with largest $max(MI(x_i, L), MI(x_i, S))$ sorted by mutual information in descending order. Time complexity: $O(N \log(n))$.
 \end{enumerate}
 
 Total complexity: $O(kN + N \log(n))$.
@@ -642,7 +643,7 @@ Let us provide an algorithm that meets the outlined specifications. For $P(c), c
 
 $P(x_i)$ involves the number of messages with given $x_i$ and the total number of messages $k$. Both can be counted while doing a loop through all messages in $T$ and for each $1 \le i \le N$ storing the number of messages with $x_i = 1$ in the table. Same applies for $P(x_i, c)$, only this time two tables are required, one for legitimate messages and one for spam.
 
-Finally, once we have all probabilities computed, finding the $n$ features with maximum mutual information in descending order can be done using a minimum priority queue. The algorithm begins with an empty queue. Then for each feature $x_i$ $MI(x_i, L)$ and $MI(x_i, S)$ are calculated, and $x_i$ along with $max(MI(x_i, L), MI(x_i, L))$ is pushed into the priority queue. If the queue size exceeds $n$, one message is removed from it. That way the top $n$ features are kept in the queue throughout the process. Because the size of the queue stays between $0$ and $n + 1$, each operation takes $O(\log(n + 1))$. The number of operations performed on the queue is $N$, thus the overall complexity of this step is $O(N \log(n))$.
+Finally, once we have all probabilities computed, finding the $n$ features with maximum mutual information in descending order can be done using a minimum priority queue. The algorithm begins with an empty queue. For each feature $x_i$ $MI(x_i, L)$ and $MI(x_i, S)$ are calculated, and $x_i$ with $max(MI(x_i, L), MI(x_i, L))$ is pushed into the priority queue. If the queue size exceeds $n$, one message is removed from it. That way the top $n$ features are kept in the queue throughout the process. Because the size of the queue stays between $0$ and $n + 1$, each operation takes $O(\log(n + 1))$. The number of operations performed on the queue is $N$, thus the overall complexity of this step is $O(N \log(n))$.
 
 Once all $x_i$ are processed, the elements are popped from the queue and added to the feature vector in reverse order. This gives us the $n$ distinct features with maximum mutual information sorted from largest to smallest.
 
@@ -651,26 +652,59 @@ It is noting that although this process allows to select the limited number of m
 \newpage
 
 
-\chapter{Performance Comparison in Practice}
+\chapter{Performance Comparison}
 
-\section{Test Data}
+The PU1 corpus spam database created by Ion Androutsopoulos \cite{Androutsopoulos} was used for testing of the modified Bayesian classifier against naive Bayesian classifier. The corpus contains 1099 messages, out of which 481 are spam. The messages are divided into 10 parts, which allows to perform cross-validation with using 9 parts for training and 1 for testing.
 
-The PU1 corpus spam database created by Ion Androutsopoulos \cite{Androutsopoulos} was used for testing of the modified Bayesian classifier against naive Bayesian classifier. Results of the other algorithms for this spam database were taken from \cite{Tretyakov}. The corpus contains 1099 messages, out of which 481 are spam. The messages are divided into 10 parts, which allows to perform cross-validation with using 9 parts for training and 1 for testing.
+The messages come in preprocessed form containing only the words from subject and body, each word is encoded with an integer. The database allows to choose among 4 flavors: the original messages, messages processed with stop-list filter ($100$ most frequent English words removed), messages processed with the  lemmatizer (each word converted to the base form) and finally the version with both lemmatizer and stop-list filter applied. In practice the database processed with both lemmatizer and stop-list performs best for most of the algorithms \cite{Tretyakov}, so we will only use this version. The dataset contains $21611$ distinct words.
 
-The messages come in preprocessed form containing only the words from subject and body, each word is encoded with an integer. The database allows to choose among 4 flavors: the original messages, messages processed with stop-list filter (100 most frequent English words removed), messages processed with the  lemmatizer (each word converted to the base form) and finally the version with both lemmatizer and stop-list filter applied. In practice the database processed with both lemmatizer and stop-list performs best for most of the algorithms \cite{Tretyakov}, so we will only use this version. The dataset contains 21611 distinct words.
-
-Let $N = 1099$ denote the total number of training messages, $N_L$ - the number of legitimate messages and $N_S$ - the number of spam messages. When comparing performance of classifiers, we will be interested in the following characteristics:
+Let $N$ denote the total number of test messages, $N_L$ - the number of legitimate messages and $N_S$ - the number of spam messages. When comparing performance of classifiers, we will be interested in the following characteristics:
 
 \begin{itemize}
 	\item False negative rate: $N_{S \rightarrow L}$ - the number of spam messages classified as legitimate.
 	\item False positive rate: $N_{L \rightarrow S}$ - the number of legitimate messages classified as spam.
-	\item Error rate: $E = \frac{N_{L \rightarrow S}}{N}$ - the number of legitimate messages classified as spam.
-	\item Legitimate message fallout: $F_L = \frac{N_{L \rightarrow S}}{N_L}$ - the number of legitimate messages classified as spam.
-	\item Spam message fallout: $F_S = \frac{N_{S \rightarrow L}}{N_S}$ - the number of legitimate messages classified as spam.
+	\item Error rate: $E = \frac{N_{L \rightarrow S}}{N}$ - percentage of incorrectly classified messages.
+	\item Precision: $P = 1 - E$ - percentage of correctly classified messages.
+	\item Legitimate message fallout: $F_L = \frac{N_{L \rightarrow S}}{N_L}$ - percentage  of legitimate messages classified as spam.
+	\item Spam message fallout: $F_S = \frac{N_{S \rightarrow L}}{N_S}$ - percentage of spam messages classified as legitimate ones.
 \end{itemize}
 
+Because of significantly higher requirements to storage ($O(kn)$ instead of $O(n)$) the non-naive Bayesian classifier was not tested with all $21611$ possible features. Instead, it was tested with with a number of configurations with up to $10000$ features. Usage of all available words would require a more complex storage system for the trie than in-memory storage.
 
-Because of significantly higher requirements to storage ($O(kn)$ instead of $O(n)$) the non-naive Bayesian classifier was not tested with all 21611 possible features. Instead, it was tested with with a number of configurations with smaller number of features.
+\begin{figure}[ht!]
+	\centering
+	\includegraphics[width=120mm]{Precision.png}
+	\caption{Precision}
+	\label{PrecisionGraph}
+\end{figure}
+
+Overall precision of the classifier does not change noticeably. It drops slightly for $n$ between $100$ and $1000$, but for smaller and larger values it does improve.
+
+\begin{figure}[ht!]
+	\centering
+	\includegraphics[width=120mm]{LegitimateFallout.png}
+	\caption{Legitimate Fallout}
+	\label{LegitimateFalloutGraph}
+\end{figure}
+
+Non-naive Bayesian classifier has slightly worse legitimate fallout score for $n$ between $100$ and $5000$, but is equal to or better than naive classifier's score for smaller and larger values. Performance of both classifiers converges as $n$ increases.
+
+\begin{figure}[ht!]
+	\centering
+	\includegraphics[width=120mm]{SpamFallout.png}
+	\caption{Spam Fallout}
+	\label{SpamFalloutGraph}
+\end{figure}
+
+In case of spam fallout the non-naive version performs better for most values and like in case of legitimate fallout it converges to naive classifier's fallout.
+
+The average performance does not change to a significant amount, which means that the assumption of feature independence does not impact the classifier's performance enough to consider non-naive version of the classifier in practice. For the same configuration of loss function the naive classifier actually tends to perform better in terms of false negatives.
+
+Another interesting point is that usage of all available features does not increase, but instead hurts the total precision of the naive classifier. This can be seen in Figure 5.1, where the precision reaches its maximum value at around $1000$ features ($~4,6\%$ of available words), where both classifiers show equal precision of $90,1\%$.
+
+The maximum depth of search in the trie for the given test set was $35\%$, while the average stayed at just $0,025\%$. This explains the close results of both classifiers since only a small number of conditional probabilities have different values in non-naive classifier, therefore the overall probability $P(x | c)$ did change much from an approximation in naive approach. The average depth of trie search can potentially be improved by putting the features with close values $P(x_i = 1 | c)$ and $P(x_i = 0 | c)$ for both $c = L$ and $c = S$. However, the mutual information value for these features will be lowest, therefore there is not much use of having precise conditional probabilities for these features instead of features with higher mutual information.
+
+In case of other classifiers, they have been tested on the same spam corpus in \cite{Tretyakov}. In case of all available $21700$ features the simple perceptron demonstrates the best precision of $98,5\%$, followed by SVM with precision of $98,1\%$. $k$ Nearest Neighbors and Naive Bayes perform worse with precision of $90,8\%$ and $87,4\%$ respectively. However, despite having the worst precision, naive Bayesian classifier has $0$ legitimate fallout, which makes it a great choice for spam filtering with minimal to no effort in tweaking the loss function. Also, note that its performance is not optimal for the large number of features, as it reaches precision of $90,1\%$ at $n = 1000$ on the same dataset.
 
 \newpage
 
@@ -680,9 +714,13 @@ Because of significantly higher requirements to storage ($O(kn)$ instead of $O(n
 
 The problem targeted in this thesis is statistical approaches to spam filtering in the most generic case, without domain specific properties. These constraints allowed to apply a number of different approaches under identical requirements, which both makes the solutions more universal and enables direct comparisons of different methods.
 
-In particular we analyzed a number of common statistical classifiers of text spam. The main focus was naive Bayesian classifier. While it guarantees to minimize the average classification risk, it does rely on an incorrect assumption of independence of features. A number of improvements that tackle this assumption were proposed, including partial optimizations that allow to balance guarantees and classification speed.
+In particular we analyzed the simplest and most common method of spam detection - naive Bayesian classifier. While it guarantees to minimize the average classification risk, it does rely on an incorrect assumption of independence of features. A number of improvements that tackle this assumption were proposed, including partial optimizations that allow to balance guarantees and classification speed.
 
-Finally, the resulting classifier was compared with original Bayesian classifier as well as other commonly used methods. When compared to other approaches, the updated Bayesian classifier does produce better results than k nearest neighbors, however it is usually behind the perceptron and SVM. It still has a number of benefits over other methods. Firstly, Bayesian classifier allows to easily tweak the relative cost of false positives, which can be a critical requirement in spam filtering. Secondly, the quality of classification only improves with larger training sets, when for linear neural net classifiers it might cause problems with overfitting.
+The results obtained in practice show no significant difference between the original classifier and the proposed modification which takes feature dependence into account. The primary reason behind this is that on average only a small fraction ($0,025\%$) of actual conditional probabilities of separate features were computed, while the others were approximated with their naive values. This can be interpreted as an effect of Bayesian classifier being optimal in the context of its training set, which means that formal probability for feature vectors which are not present in the training set is zero. Therefore, increased effect requires a significantly larger training set.
+
+Therefore, in practice the benefit of non-naive versions of Bayesian classifier are negligible compared to additional requirements to the storage subsystem. Storing $O(nk)$ data structure that allows efficient calculations of chain probabilities is not always feasible in practice. In our case it limited the number of features that could be used for classification. However, modifications with limited depth of the search trie are also possible, allowing to achieve performance close to non-naive classifier with little overhead.
+
+Finally, when compared to other approaches, the updated Bayesian classifier does produce similar or better results than k nearest neighbors, while usually being behind the perceptron and SVM. Still, it has a number of benefits over alternative methods. Firstly, it is the best default option in case of expensive false positives, which can be a critical requirement in spam filtering. Secondly, the quality of classification only improves with larger training sets, when for other classifiers it might cause problems with non-separable data. Finally, it reaches maximum performance with relatively small number of available features, allowing to use significantly larger training sets with the same speed and storage requirements.
 
 \newpage
 

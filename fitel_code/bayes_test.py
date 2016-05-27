@@ -13,7 +13,7 @@ parser = MessageParser(features_filename)
 training_set = parser.extract_feature_vectors(training_directory)
 testing_set = parser.extract_feature_vectors(testing_directory)
 
-bayesian_classifier = NaiveBayes(parser.feature_count(), training_set[0], training_set[1])
+bayesian_classifier = NonNaiveBayes(parser.feature_count(), training_set[0], training_set[1])
 
 N_L = len(testing_set[0])
 N_S = len(testing_set[1])
@@ -54,3 +54,15 @@ print "E = ", E
 print "P = ", P
 print "F_L = ", F_L
 print "F_S = ", F_S
+
+print bayesian_classifier.search_depths
+
+count = len(bayesian_classifier.search_depths)
+sum_ = 0.0
+max_ = 0
+for i in bayesian_classifier.search_depths:
+    max_ = max(max_, i)
+    sum_ += i
+
+print "Average ", sum_ / float(count)
+print "Max ", max_
