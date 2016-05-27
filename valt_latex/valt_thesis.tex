@@ -310,6 +310,8 @@ Summary:
 
 Linear regression can easily be used for classification in domains with numeric attributes. Indeed, we can use any regression technique, whether linear or nonlinear, for classification. The trick is to perform a regression for each class, setting the output equal to 1 for training instances that belong to the class and 0 for those that do not. The result is a linear expression for the class. Then, given a test example of unknown class, calculate the value of each linear expression and choose the one that is largest. This scheme is sometimes called multiresponse linear regression.
 
+Logistic regression, despite its name, is a linear model for classification rather than regression. Logistic regression is also known in the literature as logit regression, maximum-entropy classification (MaxEnt) or the log-linear classifier. In this model, the probabilities describing the possible outcomes of a single trial are modeled using a logistic function.
+
 One way of looking at multiresponse linear regression is to imagine that it approximates a numeric membership function for each class. The membership func- tion is 1 for instances that belong to that class and 0 for other instances. Given a new instance, we calculate its membership for each class and select the biggest.
 
 Multiresponse linear regression often yields good results in practice. However, it has two drawbacks. First, the membership values it produces are not proper probabilities because they can fall outside the range 0 to 1. Second, least-squares regression assumes that the errors are not only statistically independent but are also normally distributed with the same standard deviation, an assumption that is blatently violated when the method is applied to classification problems because the observations only ever take on the values 0 and 1.
@@ -329,23 +331,12 @@ $$\sum_{i}^{m} {(1 - x_i) log(1 - P[1 | w_1, w_2, ... w_n]) + x_i log(P[(1 | w_1
 
 In the multiclass case, the training algorithm uses the one-vs-rest. One-vs-the-rest is also known as one-vs-all. This strategy consists in fitting one classifier per class. For each classifier, the class is fitted against all the other classes. In addition to its computational efficiency (only $n$ classes classifiers are needed), one advantage of this approach is its interpretability. Since each class is represented by one and one classifier only, it is possible to gain knowledge about the class by inspecting its corresponding classifier. This is the most commonly used strategy for multiclass classification and is a fair default choice \cite{McKinney}.
 
-However, it is also possible to use Multinomial logistic regression in the multiclass case.
+However, it is also possible to use Multinomial logistic regression in the multiclass case. In natural language processing, multinomial LR classifiers are commonly used as an alternative to naive Bayes classifiers because they do not assume statistical independence of the random variables (commonly known as features) that serve as predictors. However, learning in such a model is slower than for a naive Bayes classifier, and thus may not be appropriate given a very large number of classes to learn. In particular, learning in a Naive Bayes classifier is a simple matter of counting up the number of co-occurrences of features and classes \cite{Bishop}.
 
-TODO describe how it works in a nushell.
+In comparison with Naive Bayes algorithm Logistic regression is better at Domains with many non-equally important features. Moreover, Logistic regression is as well robust to irrelevant features when regularization is properly set \cite{kevinPMuprhy}. Besides, logistic regression is intrinsically simple, it has low variance and so is less prone to over-fitting. .
 
-In natural language processing, multinomial LR classifiers are commonly used as an alternative to naive Bayes classifiers because they do not assume statistical independence of the random variables (commonly known as features) that serve as predictors. However, learning in such a model is slower than for a naive Bayes classifier, and thus may not be appropriate given a very large number of classes to learn. In particular, learning in a Naive Bayes classifier is a simple matter of counting up the number of co-occurrences of features and classes.
+There are also drawbacks, for instance, Logistic regression is really fast algorithm, still Naive Bayes is faster. Another drawback is that logistic regression requires more data comparing to other classifiers to achieve significant prediction quality. Finally, logistic regression assumes linear dependencies between feature vector and label. A user has to specify non-linear features manually if linear dependency is not the case.
 
-TODO cite  Bishop, Christopher M. (2006). Pattern Recognition and Machine Learning. Springer.
-
-In comparison with Naive Bayes algorithm Logistic regression is better at Domains with many non-equally important features. Moreover, Logistic regression is as well robust to irrelevant features when regularization is properly set \cite{kevinPMuprhy}.
-
-There are also drawbacks, for instance, Logistic regression is really fast algorithm, still Naive Bayes is faster.
-
-\newpage
-
-\section{Perfomance evaluation}
-
-TODO describe F1-score.
 
 \newpage
 
@@ -455,6 +446,8 @@ Words.
 \bibitem{turney} Turney, Peter. \textit{Thumbs up or thumbs down?: semantic orientation applied to unsupervised classification of reviews}. Philadelphia, Pennsylvania [USA]: 2002.
 
 \bibitem{Bing} Bing, Liu, Hu Minqing, and Junsheng Cheng. \textit{Opinion Observer: Analyzing and Comparing Opinions on the Web.}. Chiba [Japan]: 2005.
+
+\bibitem{Bishop} Bishop, Chrispopher. \textit{Pattern Recognition and Machine Learning}. Singapore: Springer Science Business Media, 2006.
 
 \end{thebibliography}
 
