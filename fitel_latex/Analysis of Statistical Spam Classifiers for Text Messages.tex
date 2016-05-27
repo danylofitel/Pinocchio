@@ -653,9 +653,24 @@ It is noting that although this process allows to select the limited number of m
 
 \chapter{Performance Comparison in Practice}
 
+\section{Test Data}
+
 The PU1 corpus spam database created by Ion Androutsopoulos \cite{Androutsopoulos} was used for testing of the modified Bayesian classifier against naive Bayesian classifier. Results of the other algorithms for this spam database were taken from \cite{Tretyakov}. The corpus contains 1099 messages, out of which 481 are spam. The messages are divided into 10 parts, which allows to perform cross-validation with using 9 parts for training and 1 for testing.
 
-The messages come in preprocessed form containing only the words from subject and body, each word is encoded with an integer. The database allows to choose among 4 flavors: the original messages, messages processed with stop-list filter (100 most frequent English words removed), messages processed with the  lemmatizer (each word converted to the base form) and finally the version with both lemmatizer and stop-list filter applied. In practice the database processed with both lemmatizer and stop-list performs best for most of the algorithms \cite{Tretyakov}, so we will only use this version. It contains 21611 distinct words which we will use as features for modified Bayesian classifier.
+The messages come in preprocessed form containing only the words from subject and body, each word is encoded with an integer. The database allows to choose among 4 flavors: the original messages, messages processed with stop-list filter (100 most frequent English words removed), messages processed with the  lemmatizer (each word converted to the base form) and finally the version with both lemmatizer and stop-list filter applied. In practice the database processed with both lemmatizer and stop-list performs best for most of the algorithms \cite{Tretyakov}, so we will only use this version. The dataset contains 21611 distinct words.
+
+Let $N = 1099$ denote the total number of training messages, $N_L$ - the number of legitimate messages and $N_S$ - the number of spam messages. When comparing performance of classifiers, we will be interested in the following characteristics:
+
+\begin{itemize}
+	\item False negative rate: $N_{S \rightarrow L}$ - the number of spam messages classified as legitimate.
+	\item False positive rate: $N_{L \rightarrow S}$ - the number of legitimate messages classified as spam.
+	\item Error rate: $E = \frac{N_{L \rightarrow S}}{N}$ - the number of legitimate messages classified as spam.
+	\item Legitimate message fallout: $F_L = \frac{N_{L \rightarrow S}}{N_L}$ - the number of legitimate messages classified as spam.
+	\item Spam message fallout: $F_S = \frac{N_{S \rightarrow L}}{N_S}$ - the number of legitimate messages classified as spam.
+\end{itemize}
+
+
+Because of significantly higher requirements to storage ($O(kn)$ instead of $O(n)$) the non-naive Bayesian classifier was not tested with all 21611 possible features. Instead, it was tested with with a number of configurations with smaller number of features.
 
 \newpage
 

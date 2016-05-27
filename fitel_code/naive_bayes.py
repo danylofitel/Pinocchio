@@ -42,7 +42,7 @@ class NaiveBayes:
         self.total_count = self.legitimate_count + self.spam_count
 
         p_l = self.legitimate_count / float(self.total_count)
-        p_s = self.spam_count / float(self.total_count)
+        p_s = 1.0 - p_l
 
         self.threshold = self.misclassification_risk * p_l / p_s
 

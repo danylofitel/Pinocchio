@@ -48,12 +48,3 @@ class MessageParser:
                 spam_messages.append(feature_vector)
 
         return legitimate_messages, spam_messages
-
-
-'''
-parser = MessageParser("C:\\spam\\features.txt")
-training_data = parser.extract_feature_vectors("C:\\spam\\training\\*.txt")
-test_data = parser.extract_feature_vectors("C:\\spam\\testing\\*.txt")
-print len(training_data[0]) + len(training_data[1])
-print len(test_data[0]) + len(test_data[1])
-'''

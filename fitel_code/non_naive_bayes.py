@@ -9,7 +9,7 @@ class Node:
         self.children = {}
 
 
-class SemiNaiveBayes:
+class NonNaiveBayes:
 
     # Lambda = Loss(L, S) /  Loss(S,L) is the additional parameter that
     # specifies the risk of misclassifying legitimate messages as spam.
@@ -32,8 +32,12 @@ class SemiNaiveBayes:
     threshold = 0.0
 
     # P(x_i = 1 | L) and P(x_i = 1 | S)
-    probability_1_legitimate = []
-    probability_1_spam = []
+    probability_1_in_legitimate = []
+    probability_1_in_spam = []
+
+    # Lambda i(x) = P(xi, S) / P(x_i, L) is the likelihood ratio.
+    likelihood_0 = []
+    likelihood_1 = []
 
     # Tries for performing lookups of conditional probabilities
     # P(x_i | x_1, ..., x_{i-1}, L) and P(x_i | x_1, ..., x_{i-1}, S)
@@ -45,15 +49,17 @@ class SemiNaiveBayes:
             raise Exception("Invalid arguments")
 
         self.n = n
-        self.probability_1_legitimate = [0 for i in range(0, self.n)]
-        self.probability_1_spam = [0 for i in range(0, self.n)]
+        self.probability_1_in_legitimate = [0 for i in range(0, self.n)]
+        self.probability_1_in_spam = [0 for i in range(0, self.n)]
+        self.likelihood_0 = [0 for i in range(0, self.n)]
+        self.likelihood_1 = [0 for i in range(0, self.n)]
 
         self.legitimate_count = len(legitimate)
         self.spam_count = len(spam)
         self.total_count = self.legitimate_count + self.spam_count
 
         p_l = self.legitimate_count / float(self.total_count)
-        p_s = self.spam_count / float(self.total_count)
+        p_s = 1.0 - p_l
 
         self.threshold = self.misclassification_risk * p_l / p_s
 
@@ -76,8 +82,11 @@ class SemiNaiveBayes:
             self.add_message_to_trie(message, self.spam_trie)
 
         for i in range(0, self.n):
-            self.probability_1_legitimate[i] = legitimate_counts[i] / float(self.legitimate_count)
-            self.probability_1_spam[i] = spam_counts[i] / float(self.spam_count)
+            self.probability_1_in_legitimate[i] = legitimate_counts[i] / float(self.legitimate_count)
+            self.probability_1_in_spam[i] = spam_counts[i] / float(self.spam_count)
+
+            self.likelihood_0[i] = self.divide((1.0 - self.probability_1_in_spam[i]), (1.0 - self.probability_1_in_legitimate[i]))
+            self.likelihood_1[i] = self.divide(self.probability_1_in_spam[i], self.probability_1_in_legitimate[i])
 
     def add_message_to_trie(self, message, root):
         node = root
@@ -104,46 +113,51 @@ class SemiNaiveBayes:
             return nom / den
 
     def is_spam(self, vector):
-        likelihood = self.divide(self.p_spam(vector), self.p_legitimate(vector))
+        likelihood = 1.0
+        legitimate_probabilities = self.p_legitimate(vector)
+        spam_probabilities = self.p_spam(vector)
+
+        for i in range(0, self.n):
+            likelihood *= self.divide(spam_probabilities[i], legitimate_probabilities[i])
 
         return likelihood > self.threshold
 
     def p_legitimate(self, vector):
-        probability = 1.0
+        probability = [0 for i in range(0, self.n)]
         node = self.legitimate_trie
         prev_count = node.count
 
         for i in range(0, self.n):
             if vector[i] in node.children:
                 node = node.children[vector[i]]
-                probability *= node.count / float(prev_count)
+                probability[i] = node.count / float(prev_count)
                 prev_count = node.count
             else:
                 for j in range(i, self.n):
-                    if vector[i] == 1:
-                        probability *= self.probability_1_legitimate[j]
+                    if vector[j] == 1:
+                        probability[j] = self.probability_1_in_legitimate[j]
                     else:
-                        probability *= 1 - self.probability_1_legitimate[j]
-                return probability
+                        probability[j] = (1.0 - self.probability_1_in_legitimate[j])
+                break
 
         return probability
 
     def p_spam(self, vector):
-        probability = 1.0
+        probability = [0 for i in range(0, self.n)]
         node = self.spam_trie
         prev_count = node.count
 
         for i in range(0, self.n):
             if vector[i] in node.children:
                 node = node.children[vector[i]]
-                probability *= node.count / float(prev_count)
+                probability[i] = node.count / float(prev_count)
                 prev_count = node.count
             else:
                 for j in range(i, self.n):
-                    if vector[i] == 1:
-                        probability *= self.probability_1_spam[j]
+                    if vector[j] == 1:
+                        probability[j] = self.probability_1_in_spam[j]
                     else:
-                        probability *= 1.0 - self.probability_1_spam[j]
-                return probability
+                        probability[j] = (1.0 - self.probability_1_in_spam[j])
+                break
 
         return probability
