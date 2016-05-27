@@ -427,40 +427,42 @@ Consider the feature vector $x = (x_1, x_2, \dots, x_n)$, $x_i = 1$ if the messa
 
 The probability $P(x | c)$ for any given $c \in \{L, S\}$ is equal to the ratio of messages in $c$ with feature vector $x$ to all messages in $c$. To calculate it efficiently, we need to be able to quickly determine the number of messages in the set that have specified feature vectors. This can be done in a number of ways.
 
-\subsection{Feature Trie}
-
-To be able to perform lookup of the number of messages with specific feature vector, we shall store the known feature vectors in a trie where each node corresponds to one of the features, starting from $x_1$. Given a node at position $x_i$ the left subtree will contain vectors with $x_i = 0$ and the right subtree - vectors with $x_i = 1$. The leaf nodes will contain the number of messages in the set with feature vectors that match the path from root to leaf. Since we need to calculate both $P(x | L)$ and $P(x | S)$, we shall maintain two tries, one for legitimate messages and one for spam.
-
-With this representation adding a message to the trie takes time $O(n)$ (where $n$ is the dimension of feature vector) since the length of the path from root to the corresponding leaf node is $n$. Therefore, the whole training process takes $O(nk)$, where $k$ is size of the training set.
-
-Lookup of the feature vector also takes linear time $O(n)$ since we only follow the path of length $n$ from root to a leaf node. It is also easy to show that the lower bound is $O(n)$ because each of the feature vectors has to be examined at least once. Therefore, our algorithm is optimal.
-
-The amount of extra storage required by the trie is $O(nk)$ (consider the set of one message). Obviously, some fractions of the paths will be shared (different messages with identical feature vectors will share the whole path). One way to increase the number of shared nodes is to sort the features in descending order by the number of messages that have the same value of this feature, then more messages will share common beginning of the path.
-
-Of course, this is not the only way to store and perform lookup on feature vectors. We can also use a hash table. Calculating hash of the feature vector is $O(n)$. Construction and lookup are $O(nk)$ and $O(n)$ on average respectively, however they can be $O(n^2k)$ and $O(n^2)$ in the worst case. For our purpose it will be sufficient to focus on trie approach.
-
-Let us outline the updated training and classification algorithms. Let $M(c, x), c \in \{L, S\}, x \in 2^{|n|}$ denote the power of subset of $c$ with feature vector $x$.
-
 \subsection{Non-Naive Bayesian Classification Algorithm}
 
-Let us now outline the updated algorithm for training and classification.
+Let us now outline the updated algorithm for training and classification. Let $M(c, x), c \in \{L, S\}, x \in 2^{|n|}$ denote the power of subset of $c$ with feature vector $x$.
 
-\textbf{Training process}
+\begin{theorem}
+	\textbf{Non-naive Bayesian classification algorithm}
+	
+	\textbf{Training process}
+	
+	\begin{enumerate}
+		\item Calculate $|L|$ and $|S|$. Time complexity: $O(k)$.
+		\item Calculate likelihood ratio $\lambda \frac{P(L)}{P(S)}$. Time complexity: $O(1)$.
+		\item For both $L$ and $S$ construct corresponding tries that allow to perform lookup of $M(c, x)$. Time complexity: $O(nk)$. Space complexity: $O(nk)$.
+	\end{enumerate}
+	
+	\textbf{Classification process}
+	
+	\begin{enumerate}
+		\item Determine feature vector $x$ for message $m$. Time complexity: $O(|m|)$ where $|m|$ denotes the number of words in message $m$.
+		\item Perform lookup of $M(L, x)$ and $M(S, x)$ using the tries. Time complexity: $O(n)$.
+		\item Calculate $P(x | L) = \frac{M(L, x)}{|L|}$ and $P(x | S) = \frac{M(S, x)}{|S|}$. Calculate $\Lambda(x) = \frac{P(x | S)}{P(x | L)}$. Time complexity: $O(1)$.
+		\item Use Bayes's decision rule to determine class of the message. Time complexity: $O(1)$.
+	\end{enumerate}
+\end{theorem}
 
-\begin{enumerate}
-	\item Calculate $|L|$ and $|S|$. Time complexity: $O(k)$.
-	\item Calculate likelihood ratio $\lambda \frac{P(L)}{P(S)}$. Time complexity: $O(1)$.
-	\item For both $L$ and $S$ construct corresponding tries that allow to perform lookup of $M(c, x)$. Time complexity: $O(nk)$. Space complexity: $O(nk)$.
-\end{enumerate}
-
-\textbf{Classification process}
-
-\begin{enumerate}
-	\item Determine feature vector $x$ for message $m$. Time complexity: $O(|m|)$ where $|m|$ denotes the number of words in message $m$.
-	\item Perform lookup of $M(L, x)$ and $M(S, x)$ using the tries. Time complexity: $O(n)$.
-	\item Calculate $P(x | L) = \frac{M(L, x)}{|L|}$ and $P(x | S) = \frac{M(S, x)}{|S|}$. Calculate $\Lambda(x) = \frac{P(x | S)}{P(x | L)}$. Time complexity: $O(1)$.
-	\item Use Bayes's decision rule to determine class of the message. Time complexity: $O(1)$.
-\end{enumerate}
+\begin{proof}
+	To be able to perform lookup of the number of messages with specific feature vector, we shall store the known feature vectors in a trie where each node corresponds to one of the features, starting from $x_1$. Given a node at position $x_i$ the left subtree will contain vectors with $x_i = 0$ and the right subtree - vectors with $x_i = 1$. The leaf nodes will contain the number of messages in the set with feature vectors that match the path from root to leaf. Since we need to calculate both $P(x | L)$ and $P(x | S)$, we shall maintain two tries, one for legitimate messages and one for spam.
+	
+	With this representation adding a message to the trie takes time $O(n)$ (where $n$ is the dimension of feature vector) since the length of the path from root to the corresponding leaf node is $n$. Therefore, the whole training process takes $O(nk)$, where $k$ is size of the training set.
+	
+	Lookup of the feature vector also takes linear time $O(n)$ since we only follow the path of length $n$ from root to a leaf node. It is also easy to show that the lower bound is $O(n)$ because each of the feature vectors has to be examined at least once. Therefore, our algorithm is optimal.
+	
+	The amount of extra storage required by the trie is $O(nk)$ (consider the set of one message). Obviously, some fractions of the paths will be shared (different messages with identical feature vectors will share the whole path). One way to increase the number of shared nodes is to sort the features in descending order by the number of messages that have the same value of this feature, then more messages will share common beginning of the path.
+	
+	Of course, this is not the only way to store and perform lookup on feature vectors. We can also use a hash table. Calculating hash of the feature vector is $O(n)$. Construction and lookup are $O(nk)$ and $O(n)$ on average respectively, however they can be $O(n^2k)$ and $O(n^2)$ in the worst case. For our purpose it will be sufficient to focus on trie approach.
+\end{proof}
 
 \subsection{Generalizing Probability of Feature Vectors}
 
@@ -498,47 +500,51 @@ However, we can reuse the trie that we already are using for calculating $M(c, x
 
 In fact, as we follow the path in the trie, on each step we will calculate exactly one of the probabilities in the chain. Taking their product gives us the final probability with overall complexity of $O(n)$. Essentially, this approach is just a different computation of the same non-Bayesian classifier, but it can be modified more easily.
 
-\subsection{Approximation for Feature Vectors Outside The Training Set}
-
-The chain rule allows us to compute the exact value of $P(x | c)$, but it does not solve the problem of feature vectors that are not in the training set having zero probability. In the previous section we suggested that a priori probability (like in naive Bayesian classifier) can be used for the whole feature vector.
-
-We can apply the same idea, but to each of the probabilities in the chain separately: if any of the probabilities $P(x_i | x_1, \dots, x_{i-1}, c)$ are equal to zero, they are replaced with a priori $P(x_i | c)$.
-
-As before, probabilities of all feature vectors that are present in the training set will not change after such modification. To prove this, let us consider each of the probabilities in the chain rule for some message $m \in c$ for fixed $c$. For $1 \le i \le n$:
-\begin{center}
-	$P(x_i | x_1, \dots, x_{i-1}, c) = \dfrac{|m \in T_c : x_1^m = x_1, \dots, x_i^m = x_i|}{|m \in T_c : x_1^m = x_1, \dots, x_{i-1}^m = x_{i-1}|}$
-\end{center}
-
-Note that $1 \le \forall i \le n$ neither nominator nor denominator are equal to $0$ since the corresponding subsets of $T_c$ contain at least the message $m$. Therefore, the chain rule Bayesian classifier compared to non-naive classifier only changes the probability of messages that would otherwise have zero probability.
-	
-One can notice that after the feature with zero conditional probability the chain rule classifier behaves identically to naive Bayesian classifier, i.e. for the rest of the features it only considers the a priori probability. It is still possible to compute the a posteriori probability while ignoring some features, therefore avoiding the situation with zero probability. However, such approach can be extremely expensive since for each component of the chain $O(2^n)$ potential subsets of conditions can be considered. Also, recall that while the trie allows to compute any of the probabilities in the chain in $O(n)$ time, it is only the case for all features in order.
-
 \subsection{Chain Rule Bayesian Classification Algorithm}
 
 Let us outline the final version of semi-naive Bayesian classifier based on chain rule computation.
 
-\textbf{Training process}
-
-\begin{enumerate}
-	\item Calculate $|L|$ and $|S|$. Time complexity: $O(k)$.
-	\item Calculate likelihood ratio $\lambda \frac{P(L)}{P(S)}$. Time complexity: $O(1)$.
-	\item For both $L$ and $S$ construct corresponding tries that allow to perform lookup of $M(c, x_1, x_2, \dots, x_i), 1 \le i \le n$. Time complexity: $O(nk)$. Space complexity: $O(nk)$.
-\end{enumerate}
-
-Time complexity: $O(nk)$. Space complexity: $O(nk)$.
-
-\textbf{Classification process}
-
-\begin{enumerate}
-	\item Determine feature vector $x$ for message $m$. Time complexity: $O(|m|)$ where $|m|$ is the number of words in $m$.
-	\item Calculate $P(x | L) = \prod_{i=1}^{n} P(x_i | \bigcap_{j = 1}^{i - 1} x_j, L)$ and $P(x | S) = \prod_{i=1}^{n} P(x_i | \bigcap_{j = 1}^{i - 1} x_j, S)$ using the corresponding paths in the tries. Time complexity: $O(n)$.
-	\item Calculate $\Lambda(x) = \frac{P(x | S)}{P(x | L)}$. Time complexity: $O(1)$.
-	\item Use Bayes's decision rule to determine class of the message. Time complexity: $O(1)$.
-\end{enumerate}
-
-Time complexity: $O(n)$. Space complexity: $O(1)$.
+\begin{theorem}
+	\textbf{Chain rule Bayesian classification algorithm}
+	
+	\textbf{Training process}
+	
+	\begin{enumerate}
+		\item Calculate $|L|$ and $|S|$. Time complexity: $O(k)$.
+		\item Calculate likelihood ratio $\lambda \frac{P(L)}{P(S)}$. Time complexity: $O(1)$.
+		\item For both $L$ and $S$ construct corresponding tries that allow to perform lookup of $M(c, x_1, x_2, \dots, x_i), 1 \le i \le n$. Time complexity: $O(nk)$. Space complexity: $O(nk)$.
+	\end{enumerate}
+	
+	Time complexity: $O(nk)$. Space complexity: $O(nk)$.
+	
+	\textbf{Classification process}
+	
+	\begin{enumerate}
+		\item Determine feature vector $x$ for message $m$. Time complexity: $O(|m|)$ where $|m|$ is the number of words in $m$.
+		\item Calculate $P(x | L) = \prod_{i=1}^{n} P(x_i | \bigcap_{j = 1}^{i - 1} x_j, L)$ and $P(x | S) = \prod_{i=1}^{n} P(x_i | \bigcap_{j = 1}^{i - 1} x_j, S)$ using the corresponding paths in the tries. Time complexity: $O(n)$.
+		\item Calculate $\Lambda(x) = \frac{P(x | S)}{P(x | L)}$. Time complexity: $O(1)$.
+		\item Use Bayes's decision rule to determine class of the message. Time complexity: $O(1)$.
+	\end{enumerate}
+	
+	Time complexity: $O(n)$. Space complexity: $O(1)$.
+\end{theorem}
 
 Note that the asymptotic complexity of classification is the same as in case of naive Bayesian algorithm.
+
+\begin{proof}
+	The chain rule allows us to compute the exact value of $P(x | c)$, but it does not solve the problem of feature vectors that are not in the training set having zero probability. In the previous section we suggested that a priori probability (like in naive Bayesian classifier) can be used for the whole feature vector.
+	
+	We can apply the same idea, but to each of the probabilities in the chain separately: if any of the probabilities $P(x_i | x_1, \dots, x_{i-1}, c)$ are equal to zero, they are replaced with a priori $P(x_i | c)$.
+	
+	As before, probabilities of all feature vectors that are present in the training set will not change after such modification. To prove this, let us consider each of the probabilities in the chain rule for some message $m \in c$ for fixed $c$. For $1 \le i \le n$:
+	\begin{center}
+		$P(x_i | x_1, \dots, x_{i-1}, c) = \dfrac{|m \in T_c : x_1^m = x_1, \dots, x_i^m = x_i|}{|m \in T_c : x_1^m = x_1, \dots, x_{i-1}^m = x_{i-1}|}$
+	\end{center}
+	
+	Note that $1 \le \forall i \le n$ neither nominator nor denominator are equal to $0$ since the corresponding subsets of $T_c$ contain at least the message $m$. Therefore, the chain rule Bayesian classifier compared to non-naive classifier only changes the probability of messages that would otherwise have zero probability.
+	
+	One can notice that after the feature with zero conditional probability the chain rule classifier behaves identically to naive Bayesian classifier, i.e. for the rest of the features it only considers the a priori probability. It is still possible to compute the a posteriori probability while ignoring some features, therefore avoiding the situation with zero probability. However, such approach can be extremely expensive since for each component of the chain $O(2^n)$ potential subsets of conditions can be considered. Also, recall that while the trie allows to compute any of the probabilities in the chain in $O(n)$ time, it is only the case for all features in order.
+\end{proof}
 
 \subsection{Limited Number of Conditional Probabilities}
 
@@ -548,28 +554,38 @@ The first modification that can significantly improve training and classificatio
 
 Let $d$, $1 \le d \le n$ be the limit on features for which we will calculate conditional probabilities. For the first $d$ features in the feature vector we will construct the trie, for the rest we will compute unconditional probabilities.
 
-\textbf{Training process}
+\begin{theorem}
+	\textbf{Chain rule Bayesian classification algorithm with limited number of conditional probabilities}
+	
+	\textbf{Training process}
+	
+	\begin{enumerate}
+		\item Calculate $|L|$ and $|S|$. Time complexity: $O(k)$.
+		\item Calculate likelihood ratio $\lambda \frac{P(L)}{P(S)}$. Time complexity: $O(1)$.
+		\item For all $w_i \in W$ calculate and store $P(x_i), d+1 \le i \le n$. Time complexity: $O(k(n-d))$, space complexity: $O(n-d)$.
+		\item For both $L$ and $S$ construct corresponding tries that allow to perform lookup of $M(c, x_1, x_2, \dots, x_i), 1 \le i \le d$. Time complexity: $O(dk)$. Space complexity: $O(dk)$.
+	\end{enumerate}
+	
+	Time complexity: $O(nk)$. Space complexity: $O(dk)$.
+	
+	\textbf{Classification process}
+	
+	\begin{enumerate}
+		\item Determine feature vector $x$ for message $m$. Time complexity: $O(|m|)$ where $|m|$ is the number of words in $m$.
+		\item Calculate $\prod_{i=d+1}^{n} P(x_i)$ using the stored values. Time complexity: $O(n-d)$.
+		\item Calculate $P(x | L) = \prod_{i=1}^{d} P(x_i | \bigcap_{j = 1}^{i - 1} x_j, L)$ and $P(x | S) = \prod_{i=1}^{d} P(x_i | \bigcap_{j = 1}^{i - 1} x_j, S)$ using the corresponding paths in the tries. Time complexity: $O(d)$.
+		\item Calculate $\Lambda(x) = \frac{P(x | S)}{P(x | L)}$. Time complexity: $O(1)$.
+		\item Use Bayes's decision rule to determine class of the message. Time complexity: $O(1)$.
+	\end{enumerate}
+	
+	Time complexity: $O(n)$. Space complexity: $O(1)$.
+\end{theorem}
 
-\begin{enumerate}
-	\item Calculate $|L|$ and $|S|$. Time complexity: $O(k)$.
-	\item Calculate likelihood ratio $\lambda \frac{P(L)}{P(S)}$. Time complexity: $O(1)$.
-	\item For all $w_i \in W$ calculate and store $P(x_i), d+1 \le i \le n$. Time complexity: $O(k(n-d))$, space complexity: $O(n-d)$.
-	\item For both $L$ and $S$ construct corresponding tries that allow to perform lookup of $M(c, x_1, x_2, \dots, x_i), 1 \le i \le d$. Time complexity: $O(dk)$. Space complexity: $O(dk)$.
-\end{enumerate}
-
-Time complexity: $O(nk)$. Space complexity: $O(dk)$.
-
-\textbf{Classification process}
-
-\begin{enumerate}
-	\item Determine feature vector $x$ for message $m$. Time complexity: $O(|m|)$ where $|m|$ is the number of words in $m$.
-	\item Calculate $\prod_{i=d+1}^{n} P(x_i)$ using the stored values. Time complexity: $O(n-d)$.
-	\item Calculate $P(x | L) = \prod_{i=1}^{d} P(x_i | \bigcap_{j = 1}^{i - 1} x_j, L)$ and $P(x | S) = \prod_{i=1}^{d} P(x_i | \bigcap_{j = 1}^{i - 1} x_j, S)$ using the corresponding paths in the tries. Time complexity: $O(d)$.
-	\item Calculate $\Lambda(x) = \frac{P(x | S)}{P(x | L)}$. Time complexity: $O(1)$.
-	\item Use Bayes's decision rule to determine class of the message. Time complexity: $O(1)$.
-\end{enumerate}
-
-Time complexity: $O(n)$. Space complexity: $O(1)$.
+\begin{proof}
+	The only difference in asymptotic time and space from the previous algorithm is that instead of having a trie with each path from root of length $n$ the constructed trie will have limited depth $d$. Therefore, the time and space complexity for constructing and storing the trie will require $k$ steps, each creating a path of length $d$. Thus, the time and space complexity are $O(dk)$.
+	
+	The classification algorithm remains unchanged since for each feature of the vector we only perform one operation: either moving down the trie or looking up the a priori feature probability, thus time complexity is $O(n)$, with no additional space required.
+\end{proof}
 
 The above modification allows to limit the space requirements regardless of the number of features. This can be useful for applications with multiple customized classifiers each based on a separate training set.
 
@@ -577,35 +593,41 @@ The above modification allows to limit the space requirements regardless of the 
 
 Another possible modification is to limit the number of conditions for each probability in the chain with some constant $d$. The easiest example would be to exclude features $x_{d+1}, \dots, x_{n}$ from conditions.
 
-The algorithm would be almost identical to the previous case. Calculation of probabilities of the first $d$ elements of the chain remains unchanged. Calculation of the rest is the same as in default chain rule classifier, however conditions after $x_d$ are ignored. This results in the following conditional probability:
+\begin{theorem}
+	\textbf{Chain rule Bayesian classification algorithm with limited number of conditions}
+	
+	\textbf{Training process}
+	
+	\begin{enumerate}
+		\item Calculate $|L|$ and $|S|$. Time complexity: $O(k)$.
+		\item Calculate likelihood ratio $\lambda \frac{P(L)}{P(S)}$. Time complexity: $O(1)$.
+		\item For both $L$ and $S$ construct corresponding tries that allow to perform lookup of $M(c, x_1, x_2, \dots, x_i), 1 \le i \le d$. Time complexity: $O(nk)$. Space complexity: $O(dk)$.
+	\end{enumerate}
+	
+	Time complexity: $O(nk)$. Space complexity: $O(dk)$.
+	
+	\textbf{Classification process}
+	
+	\begin{enumerate}
+		\item Determine feature vector $x$ for message $m$. Time complexity: $O(|m|)$ where $|m|$ is the number of words in $m$.
+		\item Calculate $P(x | L) = \prod_{i=1}^{n} P(x_i | \bigcap_{j = 1}^{\min(i - 1, d)} x_j, L)$ using the corresponding paths in the tries. Time complexity: $O(n)$
+		\item Calculate $P(x | S) = \prod_{i=1}^{n} P(x_i | \bigcap_{j = 1}^{\min(i - 1, d)} x_j, S)$ using the corresponding paths in the tries. Time complexity: $O(n)$.
+		\item Calculate $\Lambda(x) = \frac{P(x | S)}{P(x | L)}$. Time complexity: $O(1)$.
+		\item Use Bayes's decision rule to determine class of the message. Time complexity: $O(1)$.
+	\end{enumerate}
+	
+	Time complexity: $O(n)$. Space complexity: $O(1)$.
+\end{theorem}
 
-\begin{center}
-	$P(x | c) = \prod_{i=1}^{d}P(x_i | \bigcap_{j = 1}^{i - 1} x_j, c) \prod_{i=d+1}^{n}P(x_i | \bigcap_{j = 1}^{d} x_j, c)$
-\end{center}
-
-The core algorithm remains the same, the only difference is that the depth of the search trie will be limited by $d$.
-
-\textbf{Training process}
-
-\begin{enumerate}
-	\item Calculate $|L|$ and $|S|$. Time complexity: $O(k)$.
-	\item Calculate likelihood ratio $\lambda \frac{P(L)}{P(S)}$. Time complexity: $O(1)$.
-	\item For both $L$ and $S$ construct corresponding tries that allow to perform lookup of $M(c, x_1, x_2, \dots, x_i), 1 \le i \le d$. Time complexity: $O(nk)$. Space complexity: $O(dk)$.
-\end{enumerate}
-
-Time complexity: $O(nk)$. Space complexity: $O(dk)$.
-
-\textbf{Classification process}
-
-\begin{enumerate}
-	\item Determine feature vector $x$ for message $m$. Time complexity: $O(|m|)$ where $|m|$ is the number of words in $m$.
-	\item Calculate $P(x | L) = \prod_{i=1}^{n} P(x_i | \bigcap_{j = 1}^{\min(i - 1, d)} x_j, L)$ using the corresponding paths in the tries. Time complexity: $O(n)$
-	\item Calculate $P(x | S) = \prod_{i=1}^{n} P(x_i | \bigcap_{j = 1}^{\min(i - 1, d)} x_j, S)$ using the corresponding paths in the tries. Time complexity: $O(n)$.
-	\item Calculate $\Lambda(x) = \frac{P(x | S)}{P(x | L)}$. Time complexity: $O(1)$.
-	\item Use Bayes's decision rule to determine class of the message. Time complexity: $O(1)$.
-\end{enumerate}
-
-Time complexity: $O(n)$. Space complexity: $O(1)$.
+\begin{proof}
+	The algorithm would be almost identical to the previous case. Calculation of probabilities of the first $d$ elements of the chain remains unchanged. Calculation of the rest is the same as in default chain rule classifier, however conditions after $x_d$ are ignored. This results in the following conditional probability:
+	
+	\begin{center}
+		$P(x | c) = \prod_{i=1}^{d}P(x_i | \bigcap_{j = 1}^{i - 1} x_j, c) \prod_{i=d+1}^{n}P(x_i | \bigcap_{j = 1}^{d} x_j, c)$
+	\end{center}
+	
+	The core algorithm remains the same, the only difference is that the depth of the search trie will be limited by $d$.
+\end{proof}
 
 One potential modification in this direction would be to split the features (words in our case) into groups with high correlation within each group but weak correlation between groups, and then compute conditional probabilities between features of the same group.
 
@@ -678,7 +700,7 @@ Because of significantly higher requirements to storage ($O(kn)$ instead of $O(n
 	\label{PrecisionGraph}
 \end{figure}
 
-Overall precision of the classifier does not change noticeably. It drops slightly for $n$ between $100$ and $1000$, but for smaller and larger values it does improve.
+Overall precision of the classifier does not change noticeably. It drops slightly for $n$ between $100$ and $1000$, but for smaller and larger values it sees a comparable improvement.
 
 \begin{figure}[ht!]
 	\centering
