@@ -344,54 +344,54 @@ There are also drawbacks, for instance, Logistic regression is really fast algor
 
 \section{Motivation}
 
-TODO mention that usually algorithms classify opinion as either positive or negative. My SA is more precise.
+The entities, I need to classify, are text messages that are given in the form of strings. Raw strings are not convenient objects to handle by classifiers. Most machine learning algorithms can only classify numerical objects or otherwise require a distance metric or other measure of similarity between the objects. Moreover, string by itself doesn't represent a polarity of the message in any way. Therefore, set of features should be extracted. We have to convert all messages to numerical vectors called \textit{feature vectors}, and then classify these vectors.
 
-TODO say that in this work there is trade-off between classification quality and time required.
+The simplest example of a feature vector is the vector of the numbers of occurrences of all the words in the dictionary in a message. This approach is fairly straightforward and usually provides good results. However, there are a few problems with this approach. When training set if large enough, there is possibly hundreds thousands of words. It is definitely possible to perform classification on matrix with such cardinality, yet apparently this procedure will require a lot of time. Moreover, a vast majority of the words in the training set will not contribute to success of the classifier. Using small set of words is also problematic, because important words are potentially missed.
 
-In linguistic morphology and information retrieval, stemming is the process for reducing inflected (or sometimes derived) words to their stem, base or root form—generally a written word form. The stem need not be identical to the morphological root of the word; it is usually sufficient that related words map to the same stem, even if this stem is not in itself a valid root. Algorithms for stemming have been studied in computer science since the 1960s. Many search engines treat words with the same stem as synonyms as a kind of query expansion, a process called conflation.
+Let us assume we solved the aforementioned problem and are able to extract proper significant words from the data. Another pitfall is that most of languages have different forms of the same word. Those languages are called fusional and English pertains to them to some extend. All the words must be transformed to their basic form somehow.
 
-Stemming programs are commonly referred to as stemming algorithms or stemmers.
+The last but no the least, there is a problem of negation. Occurance of the fantastic usually means that a review is positve. However, in the sentence "This product is not fantastic at all", using this word as a feature is not enough to classify it properly. Although this example might seem a little contrived, a point is clear, negation can cause a classifier to make mistakes.
 
-
-Lemmatisation (or lemmatization) in linguistics, is the process of grouping together the different inflected forms of a word so they can be analysed as a single item.
-
-In computational linguistics, lemmatisation is the algorithmic process of determining the lemma for a given word. Since the process may involve complex tasks such as understanding context and determining the part of speech of a word in a sentence (requiring, for example, knowledge of the grammar of a language) it can be a hard task to implement a lemmatiser for a new language.
-
-In many languages, words appear in several inflected forms. For example, in English, the verb ‘to walk’ may appear as ‘walk’, ‘walked’, ‘walks’, ‘walking’. The base form, ‘walk’, that one might look up in a dictionary, is called the lemma for the word. The combination of the base form with the part of speech is often called the lexeme of the word.
-
-Lemmatisation is closely related to stemming. The difference is that a stemmer operates on a single word without knowledge of the context, and therefore cannot discriminate between words which have different meanings depending on part of speech. However, stemmers are typically easier to implement and run faster, and the reduced accuracy may not matter for some applications.
-
-
-The Brown Corpus was a carefully compiled selection of current American English, totaling about a million words drawn from a wide variety of sources. Every word is labaled with part of speech.
-
-Part-of-speech tags used can be found on wikipedia.
-
-Consider the simple case of text classification based on the presence or absence of just one word $w \in W$. Suppose we know that the word $w$ only occurs is reviews with negative opinion and never is present in reviews with positive opinion. This gives us confidence that any message containing $w$ is negative. This approach can be generalized to the probability of a message feature vector occurring in the message.
-
-The entities, I need to classify, are text messages that are given in the form of strings. Raw strings are not convenient objects to handle by classifiers. Most machine learning algorithms can only classify numerical objects or otherwise require a distance metric or other measure of similarity between the objects. Moreover, string by itself doesn't represent a polarity of the message in any way. Therefore, set of features should be extracted.
-
-Before proceeding with machine learning we have to convert all messages to numerical vectors called \textit{feature vectors}, and then classify these vectors. The simplest example of a feature vector is the vector of the numbers of occurrences of all the words in the dictionary in a message. The problem wih this approach is that not all the words affect a sentiment. In particular there are so-called STOP words which are completely useless in this respect. This causes significant performance degradation. Additionaly, this approach does not analyze the context of the word, which causes prediction precission to be lower.
-
-Extraction of features usually means that some information from the original message is lost. On the other hand, the way feature vector is chosen is crucial for the performance of the filter. There is a trade-off between prediction quality and training speed. Usually, the difference between performance of a really detailed model and a reasonably simple model is not significant. Yet the training speed of a simple model is considerably swifter. Therefore, in most practical applications the most basic vector of word frequencies or its modification is used.
-
-There are plethora of machine learning algorithms which are suitable for review classification task. Choosing the best algorithm may improve a quality of prediction. In practice, however, it is much more important what features are chosen for classification than what classification algorithm is used. If the features are chosen badly, then any machine learning algorithm will fail to classify data correctly no matter how good it is. A reasonable choise of features can make classification both precise and quick.
+To sum up, Feature Extraction is perhaps the most difficult task in SA. In
+the related literature, we did not find many works focusing on FE. In fact, the
+majority of the available works focus on sentiment classification, the problem which is well researched. There are plethora of machine learning algorithms which are suitable for review classification task. Choosing the best algorithm may improve a quality of prediction. In practice, however, it is much more important what features are chosen for classification than what classification algorithm is used. If the features are chosen badly, then any machine learning algorithm will fail to classify data correctly no matter how good it is. A reasonable choise of features can make classification both precise and quick.
 
 \newpage
 
 \section{Important Words Selection}
 
-TODO mention that there are more than 100.000 unique words - therefore using bigrams and trigrams is certainly feasible, but hurts performance severely. Or whatever but avoid using bigrams and trigrams
+As was mentioned in the previous section, the simplest approach to solve the problem of feature extraction is select a subset of significant words. There are other models though. One of them is using n-grams. In particular, studies show that 2-grams and 3-grams language models provide good performance \cite{Chris Manning and Hinrich}. Still the goal of my work is to combine reasonable prediction quality with fast training time. Taken into account that there are more than 100.000 unique words, using those and more sophisticated models will impose significant training time. Therefore, I have decided to use words as a features in this work. 
 
-As already was mentioned in the previous section, selecting all the words as features is not very practical. Yet in performance comparison I will use this approach as well because it can be a baseline for other extraction functions quality. In case of using all the words let us define a word dicionary $D \subseteq W$. Let us suppose $|D| = k|$. Then for matrix $X$ which is $m \times n$ dimensional, now $n = k$. Now $x_{ij} \in X$ represents number of occurances of the word $d_j \in D$ in the review $r_i \in R$.
+Extraction of features usually means that some information from the original message is lost. On the other hand, the way feature vector is chosen is crucial for the performance of the filter. There is a trade-off between prediction quality and training speed. Usually, the difference between performance of a really detailed model and a reasonably simple model is not significant. Yet the training speed of a simple model is considerably swifter. Therefore, in most practical applications the most basic vector of word frequencies or its modification is used \cite{Witten and Frank}.
 
-Now let us consider extracting a smaller dictionary. The problem is to decide which words to include not to lose important features. As it turns out adjectives used most often define an opinion. There is almost no use in adverbs, because of a domain. It is possible that in restaurant reviews there are lots of them, yet for baby products it is not.  Also I am going to use link verbs. Common link verbs are: be, appear, look, seem, become, get. For instance, in the sentence "My baby seemed happy". Another reasonable idea is including some verbs such as love, like, enjoy, recommend, etc.
+Now let us consider extracting a "small" dictionary. The problem is to decide which words to include not to lose important features. Of course, adjectives contribute to the opinion a lot. People tend to use them when they get emotional. I, however, consider using all parts of speech because words like "love" and "disappointment" also bear a strong polarity. Therefore, there will be no filtering based on parts of speech.
 
-Lemmatisation vs Stemming
-Lemmatisation is closely related to stemming. The difference is that a stemmer operates on a single word without knowledge of the context, and therefore cannot discriminate between words which have different meanings depending on part of speech. However, stemmers are typically easier to implement and run faster, and the reduced accuracy may not matter for some applications.
+First step to take is removing punctuation. Usually, punctuation does not contribute to the meaning. However, emoticons, which can be parsed as punctuation, usually do. That is why I have decided to perform emoticons parsing before removing punctuation. People tend to use emoticons quite often and a good property of emoticons is that they are no subject to negation.
+
+To eliminate words which does not contribute much to a polarity of a review, I am going try using so-called STOP words. It is a least of pronouns, determiners and specific words of other parts of speech which play solely functional role in a language. After that I have to consider ways of transforming words to their basic form. For instance, in English, the word "go" has other inflected forms such as "goes", "going", "went", and "gone". There are two common ways of solving this problem. They are Lemmatization and Stemming.
+
+In linguistic morphology and information retrieval, stemming is the process for reducing inflected (or sometimes derived) words to their stem, base or root form—generally a written word form. The stem need not be identical to the morphological root of the word; it is usually sufficient that related words map to the same stem, even if this stem is not in itself a valid root. Algorithms for stemming have been studied in computer science since the 1960s. Many search engines treat words with the same stem as synonyms as a kind of query expansion, a process called conflation \cite{Wake}.
+
+Lemmatisation (or lemmatization) in linguistics, is the process of grouping together the different inflected forms of a word so they can be analysed as a single item. 
+It is the algorithmic process of determining the lemma for a given word. Since the process may involve complex tasks such as understanding context and determining the part of speech of a word in a sentence (requiring, for example, knowledge of the grammar of a language) it can be a hard task to implement a lemmatiser for a new language \cite{Wake}.
+
+Lemmatisation is closely related to stemming. The difference is that a stemmer operates on a single word without knowledge of the context, and therefore cannot discriminate between words which have different meanings depending on part of speech. However, stemmers are typically easier to implement and run faster, and the reduced accuracy may not matter for some applications \cite{potts}.
+
+I have decided to use lemmatization in my application because there are lots of them available for English language and because they improve a quality of text analysis. Before applying lemmatization though, I need to tag every word with part of speech. For this purpose I utilize The Brown Corpus.
+
+The Brown Corpus is a carefully compiled selection of current American English, totaling about a million words drawn from a wide variety of sources. The Brown Corpus was the first million-word electronic corpus of English, created in 1961 at Brown University. This corpus contains text from 500 sources, and the sources have been categorized by genre, such as news, editorial, and so on. Every word is labeled with part of speech. Part-of-speech tags used in this corpus can be found on wikipedia.
+
+After all those steps performed I suppose a reasonable thing to do is select top $k$ used words. To do this selection I will form an inverted index, which is a dictionary of words and number of their occurrences in the data. I believe that selecting top k words makes sense, because it both allows to reduce cardinality of the training matrix and make it less sparse, so that there is a high probability that different feature representations of reviews have some features in common.
 
 \newpage
 
 \section{Context Mining}
+
+TODO create some cooler name for this section.
+
+TODO boolean vs count.
+
+TODO negation
 
 In the previous section I described in detail the process of words selection. However, before begining classification there is still a work to be done. Consider the following example: "My baby likes this toy", "My baby doesn't like this toy". Using our previous approach there is no difference between those two sentences in classification matrix. But obviously there is a significant difference - pollarity is exactly the opposite. One solution would be to include "not" in the dictionary and hope that classifier will give it significant negative wage. The issue with this approach though is that in more complex reviews, a negation can bear positive sense. Consider an example "I really like this cradle. It looks nice and my baby does not cry as often as before". Therefore, another solution should be found. I suggest using antonyms.
 
@@ -405,6 +405,7 @@ Multinomial seems to work better then ovr for Linear regression
 
 Just remember that in case that you use the n-grams framework, the number of n should not be too big. Particularly in Sentiment Analysis you will see that using 2-grams or 3-grams is more than enough and that increasing the number of keyword combinations can hurt the results. Moreover keep in mind that in Sentiment Analysis the number of occurrences of the word in the text does not make much of a difference. Usually Binarized versions (occurrences clipped to 1) of the algorithms perform better than the ones that use multiple occurrences.
 
+TODO mention that usually algorithms classify opinion as either positive or negative. My SA is more precise.
 
 
 
@@ -414,6 +415,14 @@ Just remember that in case that you use the n-grams framework, the number of n s
 \addcontentsline{toc}{chapter}{Conclusion}
 
 Words.
+
+I learned a lot from this project. I’m so glad that I was able to pull together what I’ve learned in several different areas to work on one unified program.
+
+Taking a look at my results, though, I have a few comments.
+
+My classification results aren’t that great. I had hoped to get much higher than a 60-65\% correct classification rate. That’s quite alright with me, though; it means I have plenty of room to improve this program! I could try different classification algorithms, different wordlists, even different training data. There’s lots of space to work.
+
+My code isn’t particularly pretty, and I would like to change that. I’ve just started to read Google’s Style Guide for R and I’ve noticed a few things I do wrong. I’ll set out to fix those in later versions of this program if I choose to move forward with it.
 
 \newpage
 
