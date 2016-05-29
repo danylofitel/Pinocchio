@@ -395,7 +395,7 @@ One way to deal with this issue is to use antonyms. However, a list of antonyms 
 I am going to use the solution proposed in \cite{Wake}. Every word after negation will be prefixed with “NOT\_” prefix. Because the punctuation is eliminated before text analysis, this transformation will affect only the closest words near a negation. Usually it is exactly what is required. Of course number of words is increased that way. Nevertheless, as described before, because I build vector based on top $k$ used words, in the result there is no difference.
 
 After words are selected there is natural choice between representing text as a list of word counts or as a Boolean vector. According to some studies in Sentiment Analysis the number of occurrences of the word in the text does not make much of a difference. Usually Binarized versions (occurrences clipped to 1) of the algorithms perform better than the ones that use multiple occurrences.
-Another reason to tone down words that appear often in a text is that a word that appears regularly is more likely to have a neutral sense. This is particularly true of nouns. In one example from our corpus, the words death, turmoil, and war each appear twice. A single use of any of these words might indicate a comment (e.g., I was bored to death), but repeated use suggests a descriptive narrative.
+Another reason to tone down words that appear often in a text is that a word that appears regularly is more likely to have a neutral sense.
 
 \newpage
 
@@ -408,23 +408,21 @@ Usually algorithms classify opinion as either positive or negative. My sentiment
 First, I am going to compare different configurations of my algorithm on a subset of the data. There are different configurations. In particular:
 
 Boolean configurations:
+\begin{itemize}  
+	\item $USE\_STOP\_WORDS$
+	\item $USE\_EMOTICONS$
+	\item $USE\_NEGATION$ 
+	\item $USE\_BOOLEAN\_REPRESENTATION$
+\end{itemize}
 
-$USE\_STOP\_WORDS$
-
-$USE\_EMOTICONS$
-
-$USE\_NEGATION$
-
-$USE\_BOOLEAN\_REPRESENTATION$
 
 Numeric configurations:
+\begin{itemize}  
+	\item $NUMBER\_OF\_REVIEWS\_TO\_ANALYZE$
+	\item $NUMBER\_OF\_POPULAR\_WORDS\_TO\_USE$
+\end{itemize}
 
-$NUMBER\_OF\_REVIEWS\_TO\_ANALYZE$
-
-$NUMBER\_OF\_POPULAR\_WORDS\_TO\_USE$
-
-In this section I will fixate $NUMBER\_OF\_REVIEWS\_TO\_ANALYZE$ and $NUMBER\_OF\_POPULAR\_WORDS\_TO\_USE$ for training to complete in reasonable time. For every run the data is divided into training and test sets. In this section I will show performance for 80:20 ratio. In next sections, I will show performance for both 60:40 and 80:20 ratio.I consider confusion matrix and classification report as a performance metric.
-Classification report consists of precision, recall, f1-score for each class. Moreover, there are averages of this metrics, which I consider the most crucial part. I think of an algorithm A as a “better” algorithm than an algorithm B if its average f1-score is higher.
+In first two comparisons I will fixate $NUMBER\_OF\_REVIEWS\_TO\_ANALYZE$ and $NUMBER\_OF\_POPULAR\_WORDS\_TO\_USE$ for training to complete in reasonable time. For every run the data is divided into training and test sets. I will show performance for both 60:40 and 80:20 ratio.I consider confusion matrix and classification report as a performance metric. Classification report consists of precision, recall, f1-score for each class. Moreover, there are averages of this metrics, which I consider the most crucial part. I think of an algorithm A as a “better” algorithm than an algorithm B if its average f1-score is higher.
 
 \newpage
 
@@ -490,7 +488,7 @@ Classification report:
 		$USE\_STOP\_WORDS$ & False \\ \hline
 		$USE\_EMOTICONS$ & False \\ \hline
 		$USE\_NEGATION$ & False \\ \hline
-		$USE\_BOOLEAN_REPRESENTATION$ & True \\ \hline
+		$USE\_BOOLEAN\_REPRESENTATION$ & True \\ \hline
 	\end{tabular}
 \end{center}
 
@@ -530,7 +528,7 @@ Classification report:
 		$USE\_STOP\_WORDS$ & False \\ \hline
 		$USE\_EMOTICONS$ & False \\ \hline
 		$USE\_NEGATION$ & True \\ \hline
-		$USE\_BOOLEAN_REPRESENTATION$ & True \\ \hline
+		$USE\_BOOLEAN\_REPRESENTATION$ & True \\ \hline
 	\end{tabular}
 \end{center}
 
@@ -570,7 +568,7 @@ Classification report:
 		$USE\_STOP\_WORDS$ & False \\ \hline
 		$USE\_EMOTICONS$ & True \\ \hline
 		$USE\_NEGATION$ & True \\ \hline
-		$USE\_BOOLEAN_REPRESENTATION$ & True \\ \hline
+		$USE\_BOOLEAN\_REPRESENTATION$ & True \\ \hline
 	\end{tabular}
 \end{center}
 
@@ -610,7 +608,7 @@ Classification report:
 		$USE\_STOP\_WORDS$ & True \\ \hline
 		$USE\_EMOTICONS$ & True \\ \hline
 		$USE\_NEGATION$ & True \\ \hline
-		$USE\_BOOLEAN_REPRESENTATION$ & True \\ \hline
+		$USE\_BOOLEAN\_REPRESENTATION$ & True \\ \hline
 	\end{tabular}
 \end{center}
 
@@ -657,7 +655,7 @@ Using the results from the previous section I have decided to use the following 
 		$USE\_STOP\_WORDS$ & False \\ \hline
 		$USE\_EMOTICONS$ & False \\ \hline
 		$USE\_NEGATION$ & True \\ \hline
-		$USE\_BOOLEAN_REPRESENTATION$ & True \\ \hline
+		$USE\_BOOLEAN\_REPRESENTATION$ & True \\ \hline
 		$NUMBER\_OF\_REVIEWS\_TO\_ANALYZE$ & 10000 \\ \hline
 		$NUMBER\_OF\_POPULAR\_WORDS\_TO\_USE$ & 1000 \\ \hline
 	\end{tabular}
@@ -830,7 +828,7 @@ For the setting $NUMBER\_OF\_REVIEWS\_TO\_ANALYZE = 100000$, there was no notice
 		$USE\_STOP\_WORDS$ & True \\ \hline
 		$USE\_EMOTICONS$ & False \\ \hline
 		$USE\_NEGATION$ & True \\ \hline
-		$USE\_BOOLEAN_REPRESENTATION$ & True \\ \hline
+		$USE\_BOOLEAN\_REPRESENTATION$ & True \\ \hline
 		$NUMBER\_OF\_REVIEWS\_TO\_ANALYZE$ & 100000 \\ \hline
 		$NUMBER\_OF\_POPULAR\_WORDS\_TO\_USE$ & 1000 \\ \hline
 	\end{tabular}
@@ -930,7 +928,7 @@ Classification report:
 \end{center}
 
 
-For this dataset there is a list of words suggested for binary sentiment analysis. I have tried using it for this purpose and it produced fairly good results. Now let us compare how it performs at more accurate classification task and compare its performance with the performance of my solution.
+For this dataset there is a list of words suggested for binary sentiment analysis at \cite{important-words}. I have tried using it for this purpose and it produced fairly good results. Now let us compare how it performs at more accurate classification task and compare its performance with the performance of my solution.
 
 \bigbreak
 
@@ -991,7 +989,7 @@ Classification report:
 	\end{tabular}
 \end{center}
 
-We can see that my algorithm performs significantly better than aforementioned sentiment analysis alorithms, which perform good on binary polarity classification problem.
+We can see that my algorithm performs significantly better than aforementioned sentiment analysis alorithms, which perform good on binary polarity classification problem. Moreover, with bigger amount of data, the quality of predictions improves.
 
 \newpage
 
@@ -1039,6 +1037,8 @@ My code isn’t particularly pretty, and I would like to change that. I’ve jus
 \bibitem{Minqing} Minqing, Hu, and Liu Bing. \textit{Mining and Summarizing Customer Reviews}. Seattle [USA]: 2004.
 
 \bibitem{amazon-data} Carlos Guestrin, Amazon Professor of Machine Learning. Web. 26 May 2016. <https://s3.amazonaws.com/static.dato.com/files/coursera/course-3/amazon\_baby.csv.zip>.
+
+\bibitem{important-words} Carlos Guestrin, Amazon Professor of Machine Learning. Web. 26 May 2016. <https://github.com/learnml/machine-learning-specialization/blob/master/course-3/important\_words.json>.
 
 \bibitem{turney} Turney, Peter. \textit{Thumbs up or thumbs down?: semantic orientation applied to unsupervised classification of reviews}. Philadelphia, Pennsylvania [USA]: 2002.
 
