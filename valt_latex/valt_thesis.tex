@@ -819,121 +819,179 @@ As can be seen, switching from 80:20 to 60:40 training to test set ratio does no
 
 \section{Comparison with other models}
 
-COMPARISON 3
+Let us now use most of the data to compare the quality of my solution with other solutions which apply to the review data I analyze.
 
-For $NUMBER_OF_REVIEWS_TO_ANALYZE = 100000$, ther was no difference whether use stop words and emoticons or not. I used:
-$USE_STOP_WORDS = True$
-$USE_EMOTICONS = False$
-$USE_NEGATION = True$
+For the setting $NUMBER\_OF\_REVIEWS\_TO\_ANALYZE = 100000$, there was no noticeable difference whether use stop words and emoticons or not. I used the following configuration:
 
-$USE_BOOLEAN_REPRESENTATION = True$
-$NUMBER_OF_REVIEWS_TO_ANALYZE = 100000$
-$NUMBER_OF_POPULAR_WORDS_TO_USE = 1000$
+\begin{center}
+	\begin{tabular}{ c | c }
+		\hline
+		Parameter & Value \\ \hline
+		$USE\_STOP\_WORDS$ & True \\ \hline
+		$USE\_EMOTICONS$ & False \\ \hline
+		$USE\_NEGATION$ & True \\ \hline
+		$USE\_BOOLEAN_REPRESENTATION$ & True \\ \hline
+		$NUMBER\_OF\_REVIEWS\_TO\_ANALYZE$ & 100000 \\ \hline
+		$NUMBER\_OF\_POPULAR\_WORDS\_TO\_USE$ & 1000 \\ \hline
+	\end{tabular}
+\end{center}
 
+Whenever applicable training data to test data ratio 80:20 is used.
 
+\bigbreak
 
-Naive Bayes 80:20
-Confusion matrix:
-[[1085  177  155   67  331]
-[ 382  165  245  142  335]
-[ 243  137  449  401  596]
-[ 176   64  318 1166 1888]
-[ 325   87  168  927 9971]]
-Classification report:
-precision    recall
-1 0.49 0.60
-2 0.26 0.13
-3 0.34 0.25
-4 0.43 0.32
-5 0.76 0.87
-avg / total       0.61      0.64
-f1-score   support
-0.54      1815
-0.17      1269
-0.28      1826
-0.37      3612
-0.81     11478
-0.62 20000
-
-Logistic regression 80:20
-Confusion matrix:
-[[ 1067   157   117   42   432]
-[  394   169   200   96   410]
-[  214   166   405   310  731]
-[  88   79   274  9222249]
-[ 133   66   123  501 10655]]
-Classification report:
-precision    recall  f1-score   support
-
-1       0.56      0.59      0.58       1815
-2       0.27      0.13      0.18       1269
-3       0.36      0.22      0.28       1826
-4       0.49      0.26      0.343612
-5       0.74      0.93      0.82      11478
-
-avg / total       0.61      0.66      0.62      20000
-
-Now let us compare my solution with predictor based on prepared lexicon. In particular the lexicon of positive and negative words (TODO cite) is used. The formula of prediction is 1 + round(4 * (positive count / (positive count + negative count)). Now the $NUMBER_OF_REVIEWS_TO_ANALYZE$ is 100000. The results are bellow:
-
-
+\textbf{Setup 3.1 Naive Bayes}
 
 Confusion matrix:
-[[ 1169  1818  3353  1683   897]
-[  413   807  2345  1762   997]
-[  381   707  2850  3015  2204]
-[  296   736  4224  7058  5977]
-[  707  1296  9185 18505 27615]]
+\[
+\begin{bmatrix}
+1085 & 177 & 155 & 67 & 331 \\
+382 & 165 & 245 & 142 & 335 \\
+243 & 137 & 449 & 401 & 596 \\
+176 & 64 & 318 & 1166 & 1888 \\
+325 &  87 & 168 & 927 & 9971 \\
+\end{bmatrix}
+\]
+
 Classification report:
-precision    recall  f1-score   support
 
-1       0.39      0.13      0.20      8920
-2       0.15      0.13      0.14      6324
-3       0.13      0.31      0.18      9157
-4       0.22      0.39      0.28     18291
-5       0.73      0.48      0.58     57308
+\begin{center}
+	\begin{tabular}{c | c | c | c | c }
+		\hline
+		class & precision & recall & f1-score & support \\ \hline
+		1 & 0.49 & 0.60 & 0.54 & 1815 \\ \hline
+		2 & 0.26 & 0.13 & 0.17 & 1269 \\ \hline
+		3 & 0.34 & 0.25 & 0.28 & 1826 \\ \hline
+		4 & 0.43 & 0.32 & 0.37 & 3612 \\ \hline
+		5 & 0.76 & 0.87 & 0.81 & 11478 \\ \hline
+		avg/total & 0.61 & 0.64 & 0.62 & 20000 \\ \hline
+	\end{tabular}
+\end{center}
 
-avg / total       0.52      0.39      0.43    100000
+\textbf{Setup 3.2 Logistic regression}
+
+Confusion matrix:
+\[
+\begin{bmatrix}
+1067 & 157 & 117 & 42 & 432 \\
+394 & 169 & 200 & 96 & 410 \\
+214 & 166 & 405 & 310 & 731 \\
+88 & 79  & 274 & 922 & 2249 \\
+133 & 66 & 123 & 501 & 10655 \\
+\end{bmatrix}
+\]
+
+Classification report:
+
+\begin{center}
+	\begin{tabular}{c | c | c | c | c }
+		\hline
+		class & precision & recall & f1-score & support \\ \hline
+		1 & 0.56 & 0.59 & 0.58 & 1815 \\ \hline
+		2 & 0.27 & 0.13 & 0.18 & 1269 \\ \hline
+		3 & 0.36 & 0.22 & 0.28 & 1826 \\ \hline
+		4 & 0.49 & 0.26 & 0.34 & 3612 \\ \hline
+		5 & 0.74 & 0.93 & 0.82 & 11478 \\ \hline
+		avg/total & 0.61 & 0.66 & 0.62 & 20000 \\ \hline
+	\end{tabular}
+\end{center}
+
+
+Now let us compare my solution with predictor based on a prepared lexicon. In particular the lexicon of positive and negative words in English at \cite{pos-neg} is used. The formula of prediction is $prediction = 1 + round(4 * (positive count / (positive count + negative count))$. Now the $NUMBER\_OF\_REVIEWS\_TO\_ANALYZE$ is 100000. Since this alorithm does not require learning, the whole dataset is used as a test set. The results are bellow:
+
+\bigbreak
+
+\textbf{Setup 3.3 Positive and negative word count}
+
+Confusion matrix:
+\[
+\begin{bmatrix}
+1169 & 1818 & 3353 & 1683 & 897 \\
+413 & 807 & 2345 & 1762 & 997 \\
+381 & 707 & 2850 & 3015 & 2204 \\
+296 & 736 & 4224 & 7058 & 5977 \\
+707 & 1296 & 9185 & 18505 & 27615 \\
+\end{bmatrix}
+\]
+
+Classification report:
+
+\begin{center}
+	\begin{tabular}{c | c | c | c | c }
+		\hline
+		class & precision & recall & f1-score & support \\ \hline
+		1 & 0.39 & 0.13 & 0.20 & 8920 \\ \hline
+		2 & 0.15 & 0.13 & 0.14 & 6324 \\ \hline
+		3 & 0.13 & 0.31 & 0.18 & 9157 \\ \hline
+		4 & 0.22 & 0.39 & 0.28 & 18291 \\ \hline
+		5 & 0.73 & 0.48 & 0.58 & 57308 \\ \hline
+		avg/total & 0.52 & 0.39 & 0.43 & 100000 \\ \hline
+	\end{tabular}
+\end{center}
 
 
 For this dataset there is a list of words suggested for binary sentiment analysis. I have tried using it for this purpose and it produced fairly good results. Now let us compare how it performs at more accurate classification task and compare its performance with the performance of my solution.
 
+\bigbreak
 
-Naïve Bayes 80:20
+\textbf{Setup 3.4 Suggested words, Naive Bayes}
+
 Confusion matrix:
-[[  511     9    10     0  1285]
-[  214    13    20     1  1021]
-[  148     8    20     4  1646]
-[   76     4    21     3  3508]
-[  153     7    25     7 11286]]
+\[
+\begin{bmatrix}
+511 & 9 & 10 & 0 & 1285 \\
+214 & 13 & 20 & 1 & 1021 \\
+148 & 8 & 20 & 4 & 1646 \\
+76 & 4 & 21 & 3 & 3508 \\
+153 & 7 & 25 & 7 & 11286 \\
+\end{bmatrix}
+\]
+
 Classification report:
-precision    recall  f1-score   support
 
-1       0.46      0.28      0.35      1815
-2       0.32      0.01      0.02      1269
-3       0.21      0.01      0.02      1826
-4       0.20      0.00      0.00      3612
-5       0.60      0.98      0.75     11478
+\begin{center}
+	\begin{tabular}{c | c | c | c | c }
+		\hline
+		class & precision & recall & f1-score & support \\ \hline
+		1 & 0.46 & 0.28 & 0.35 & 1815 \\ \hline
+		2 & 0.32 & 0.01 & 0.02 & 1269 \\ \hline
+		3 & 0.21 & 0.01 & 0.02 & 1826 \\ \hline
+		4 & 0.20 & 0.00 & 0.00 & 3612 \\ \hline
+		5 & 0.60 & 0.98 & 0.75 & 11478 \\ \hline
+		avg/total & 0.46 & 0.59 & 0.46 & 20000 \\ \hline
+	\end{tabular}
+\end{center}
 
-avg / total       0.46      0.59      0.46     20000
 
+\textbf{Setup 3.5 Suggested words, Logistic regression}
 
-Logistic regression:
 Confusion matrix:
-[[  510     9     4     4  1288]
-[  219    11     9    13  1017]
-[  144     7    14    10  1651]
-[   63     8    10    22  3509]
-[  141     2     5    18 11312]]
+\[
+\begin{bmatrix}
+510 & 9 & 4 & 4 & 1288 \\
+219 & 11 & 9 & 13 & 1017 \\
+144 & 7 & 14 & 10 & 1651 \\
+63 & 8 & 10 & 22 & 3509 \\
+141 & 2 & 5 & 18 & 11312 \\
+\end{bmatrix}
+\]
+
 Classification report:
-precision    recall  f1-score   support
 
-1       0.47      0.28      0.35      1815
-2       0.30      0.01      0.02      1269
-3       0.33      0.01      0.01      1826
-4       0.33      0.01      0.01      3612
-5       0.60      0.99      0.75     11478
+\begin{center}
+	\begin{tabular}{c | c | c | c | c }
+		\hline
+		class & precision & recall & f1-score & support \\ \hline
+		1 & 0.47 & 0.28 & 0.35 & 1815 \\ \hline
+		2 & 0.30 & 0.01 & 0.02 & 1269 \\ \hline
+		3 & 0.33 & 0.01 & 0.01 & 1826 \\ \hline
+		4 & 0.33 & 0.01 & 0.01 & 3612 \\ \hline
+		5 & 0.60 & 0.99 & 0.75 & 11478 \\ \hline
+		avg/total & 0.50 & 0.59 & 0.47 & 20000 \\ \hline
+	\end{tabular}
+\end{center}
 
-avg / total       0.50      0.59      0.47     20000
+We can see that my algorithm performs significantly better than aforementioned sentiment analysis alorithms, which perform good on binary polarity classification problem.
 
 \newpage
 
@@ -941,6 +999,8 @@ avg / total       0.50      0.59      0.47     20000
 \addcontentsline{toc}{chapter}{Conclusion}
 
 Words.
+
+Algorithms which suit well for binary polarization task, perform very poor on 5 degree classification.
 
 Product reviews, etc are relatively easy
 
