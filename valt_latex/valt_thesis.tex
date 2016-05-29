@@ -440,7 +440,7 @@ $NUMBER\_OF\_POPULAR\_WORDS\_TO_USE = 1000$
 
 \bigbreak
 
-\textbf{Set up 1}
+\textbf{Setup 1.1}
 
 \begin{center}
 	\begin{tabular}{ c | c }
@@ -481,7 +481,7 @@ Classification report:
 
 
 
-\textbf{Set up 2}
+\textbf{Setup 1.2}
 
 \begin{center}
 	\begin{tabular}{ c | c }
@@ -521,7 +521,7 @@ Classification report:
 \end{center}
 
 
-\textbf{Set up 3}
+\textbf{Setup 1.3}
 
 \begin{center}
 	\begin{tabular}{ c | c }
@@ -561,7 +561,7 @@ Classification report:
 \end{center}
 
 
-\textbf{Set up 4}
+\textbf{Setup 1.4}
 
 \begin{center}
 	\begin{tabular}{ c | c }
@@ -601,7 +601,7 @@ Classification report:
 \end{center}
 
 
-\textbf{Set up 5}
+\textbf{Setup 1.5}
 
 \begin{center}
 	\begin{tabular}{ c | c }
@@ -646,9 +646,9 @@ This result is applicable only for a subset of the data with $NUMBER\_OF\_REVIEW
 \newpage
 
 
-\section{Comparison 2}
+\section{Predictors comparison}
 
-Using this results I have decided to use the following configuration in the next comparison:
+Using the results from the previous section I have decided to use the following configuration in the next comparison:
 
 \begin{center}
 	\begin{tabular}{ c | c }
@@ -658,113 +658,166 @@ Using this results I have decided to use the following configuration in the next
 		$USE\_EMOTICONS$ & False \\ \hline
 		$USE\_NEGATION$ & True \\ \hline
 		$USE\_BOOLEAN_REPRESENTATION$ & True \\ \hline
+		$NUMBER\_OF\_REVIEWS\_TO\_ANALYZE$ & 10000 \\ \hline
+		$NUMBER\_OF\_POPULAR\_WORDS\_TO\_USE$ & 1000 \\ \hline
 	\end{tabular}
 \end{center}
 
-$NUMBER_OF_REVIEWS_TO_ANALYZE = 10000$
-$NUMBER_OF_POPULAR_WORDS_TO_USE = 1000$
+Let’s compare performance of Naive Bayes, Logistic Regression and KNN.
+Let's start with training data to test data ratio 80:20.
 
-Let’s compare performance of Naive Bayes, Logistic Regression and KNN on 10k dataset.
+\bigbreak
 
+\textbf{Setup 2.1 Naive Bayes}
 
-80:20
-
-Naive Bayes
 Confusion matrix:
-[[134  23  24  17  44]
-[ 50  18  30  15  29]
-[ 24  15  42  33  57]
-[ 20  20  35  92 178]
-[ 36  15  32  90 927]]
+\[
+\begin{bmatrix}
+134 & 23 & 24 & 17 & 44 \\
+50 & 18 & 30 & 15 & 29 \\
+24 & 15 & 42 & 33 & 57 \\
+20 & 20 & 35 & 92 & 178 \\
+36 & 15 & 32 & 90 & 927 \\
+\end{bmatrix}
+\]
+
 Classification report:
-precision    recall  f1-score   support
 
-1       0.51      0.55      0.53       242
-2       0.20      0.13      0.15       142
-3       0.26      0.25      0.25       171
-4       0.37      0.27      0.31       345
-5       0.75      0.84      0.79      1100
+\begin{center}
+	\begin{tabular}{c | c | c | c | c }
+		\hline
+		class & precision & recall & f1-score & support \\ \hline
+		1 & 0.51 & 0.55 & 0.53 & 242 \\ \hline
+		2 & 0.20 & 0.13 & 0.15 & 142 \\ \hline
+		3 & 0.26 & 0.25 & 0.25 & 171 \\ \hline
+		4 & 0.37 & 0.27 & 0.31 & 345 \\ \hline
+		5 & 0.75 & 0.84 & 0.79 & 1100 \\ \hline
+		avg/total & 0.57 & 0.61 & 0.59 & 2000 \\ \hline
+	\end{tabular}
+\end{center}
 
-avg / total       0.57      0.61      0.59      2000
+\textbf{Setup 2.2 Logistic regression}
 
-Logistic regression
 Confusion matrix:
-[[124  28  20  19  51]
-[ 43  32  26  11  30]
-[ 24  26  37  22  62]
-[ 18  28  32  88 179]
-[ 51  24  30 111 884]]
+\[
+\begin{bmatrix}
+124 & 28 & 20 & 19 & 5 \\
+43 & 32 & 26 & 11 & 30 \\
+24 & 26 & 37 & 22 & 62 \\
+18 & 28 & 32 & 88 & 179 \\
+51 & 24 & 30 & 111 & 884 \\
+\end{bmatrix}
+\]
+
 Classification report:
-precision    recall  f1-score   support
 
-1       0.48      0.51      0.49       242
-2       0.23      0.23      0.23       142
-3       0.26      0.22      0.23       171
-4       0.35      0.26      0.30       345
-5       0.73      0.80      0.77      1100
+\begin{center}
+	\begin{tabular}{c | c | c | c | c }
+		\hline
+		class & precision & recall & f1-score & support \\ \hline
+		1 & 0.48 & 0.51 & 0.49 & 242 \\ \hline
+		2 & 0.23 & 0.23 & 0.23 & 142 \\ \hline
+		3 & 0.26 & 0.22 & 0.23 & 171 \\ \hline
+		4 & 0.35 & 0.26 & 0.30 & 345 \\ \hline
+		5 & 0.73 & 0.80 & 0.77 & 1100 \\ \hline
+		avg/total & 0.56 & 0.58 & 0.57 & 2000 \\ \hline
+	\end{tabular}
+\end{center}
 
-avg / total       0.56      0.58      0.57      2000
+\textbf{Setup 2.3 KNN}
 
-KNN
 Confusion matrix:
-[[ 47  14  12  11 158]
-[ 21  10  10  11  90]
-[ 15   2  13  20 121]
-[ 15   3  14  28 285]
-[ 52  21  31  49 947]]
+\[
+\begin{bmatrix}
+47 & 14 & 12 & 11 & 158 \\
+21 & 10 & 10 & 11 & 90 \\
+15 & 2 & 13 & 20 & 121 \\
+15 & 3 & 14 & 28 & 285 \\
+52 & 21 & 31 & 49 & 947 \\
+\end{bmatrix}
+\]
+
 Classification report:
-precision    recall  f1-score   support
 
-1       0.31      0.19      0.24       242
-2       0.20      0.07      0.10       142
-3       0.16      0.08      0.10       171
-4       0.24      0.08      0.12       345
-5       0.59      0.86      0.70      1100
+\begin{center}
+	\begin{tabular}{c | c | c | c | c }
+		\hline
+		class & precision & recall & f1-score & support \\ \hline
+		1 & 0.31 & 0.19 & 0.24 & 242 \\ \hline
+		2 & 0.20 & 0.07 & 0.10 & 142 \\ \hline
+		3 & 0.16 & 0.08 & 0.10 & 171 \\ \hline
+		4 & 0.24 & 0.08 & 0.12 & 345 \\ \hline
+		5 & 0.59 & 0.86 & 0.70 & 1100 \\ \hline
+		avg/total & 0.43 & 0.52 & 0.45 & 2000 \\ \hline
+	\end{tabular}
+\end{center}
 
-avg / total       0.43      0.52      0.45      2000
+As we can see KNN performs poorly and there is no reason to use it in the future. Therefore, I don't include it in farther comparisons. Now let us demonstrate classification performance with training data to test data ratio 60:40.
 
-As we can see KNN performs poorly and there is no reason to use it in the future.
+\bigbreak
 
-60:40
-Naive Bayes
+\textbf{Setup 2.4 Naive Bayes}
+
 Confusion matrix:
-[[ 271   35   42   41   82]
-[ 104   34   43   46   65]
-[  50   30   68   82  111]
-[  41   36   62  191  366]
-[  84   37   48  196 1835]]
+\[
+\begin{bmatrix}
+271 & 35 &  42 & 41 & 82 \\
+104 & 34 & 43 & 46 & 65 \\
+50 & 30 & 68 & 82 & 111 \\
+41 & 36 & 62 & 191 & 366 \\
+84 & 37 & 48 & 196 & 1835 \\
+\end{bmatrix}
+\]
+
 Classification report:
-precision    recall  f1-score   support
 
-1       0.49      0.58      0.53       471
-2       0.20      0.12      0.15       292
-3       0.26      0.20      0.23       341
-4       0.34      0.27      0.31       696
-5       0.75      0.83      0.79      2200
+\begin{center}
+	\begin{tabular}{c | c | c | c | c }
+		\hline
+		class & precision & recall & f1-score & support \\ \hline
+		1 & 0.49 & 0.58 & 0.53 & 471 \\ \hline
+		2 & 0.20 & 0.12 & 0.15 & 292 \\ \hline
+		3 & 0.26 & 0.20 & 0.23 & 341 \\ \hline
+		4 & 0.34 & 0.27 & 0.31 & 696 \\ \hline
+		5 & 0.75 & 0.83 & 0.79 & 2200 \\ \hline
+		avg/total & 0.56 & 0.60 & 0.58 & 4000 \\ \hline
+	\end{tabular}
+\end{center}
 
-avg / total       0.56      0.60      0.58      4000
+\textbf{Setup 2.5 Logistic regression}
 
-Logistic regression
 Confusion matrix:
-[[ 230   66   56   39   80]
-[  91   53   44   40   64]
-[  41   56   75   69  100]
-[  39   49   81  205  322]
-[ 102   62   85  309 1642]]
+\[
+\begin{bmatrix}
+230 & 66 & 56 & 39 & 80 \\
+91 & 53 & 44 & 40 & 64 \\
+41 & 56 & 75 & 69 & 100 \\
+39 & 49 & 81 & 205 & 322 \\
+102 & 62 & 85 & 309 & 1642 \\
+\end{bmatrix}
+\]
+
 Classification report:
-precision    recall  f1-score   support
 
-1       0.46      0.49      0.47       471
-2       0.19      0.18      0.18       292
-3       0.22      0.22      0.22       341
-4       0.31      0.29      0.30       696
-5       0.74      0.75      0.75      2200
+\begin{center}
+	\begin{tabular}{c | c | c | c | c }
+		\hline
+		class & precision & recall & f1-score & support \\ \hline
+		1 & 0.46 & 0.49 & 0.47 & 471 \\ \hline
+		2 & 0.19 & 0.18 & 0.18 & 292 \\ \hline
+		3 & 0.22 & 0.22 & 0.22 & 341 \\ \hline
+		4 & 0.31 & 0.29 & 0.30 & 696 \\ \hline
+		5 & 0.74 & 0.75 & 0.75 & 2200 \\ \hline
+		avg/total & 0.55 & 0.55 & 0.55 & 4000 \\ \hline
+	\end{tabular}
+\end{center}
 
-avg / total       0.55      0.55      0.55      4000
+
+As can be seen, switching from 80:20 to 60:40 training to test set ratio does not reduce performance significantly which means that those two classifiers generalize well. Naive Bayes seems to perform slightly better than Logistic regression for data of this particular domain.
 
 \newpage
 
-\section{Comparison 3}
+\section{Comparison with other models}
 
 COMPARISON 3
 
