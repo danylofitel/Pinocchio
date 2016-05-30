@@ -996,19 +996,14 @@ We can see that my algorithm performs significantly better than aforementioned s
 \chapter*{Conclusion}
 \addcontentsline{toc}{chapter}{Conclusion}
 
-Words.
+The task which was given is completely solved by me. I analyzed various existing methods for performing machine learing and feature extraction for sentiment analysis. Based on these methods I devised and implemented programaticaly an alogrithm which combines different existing techniques and is well tailored for the product review data domain I leveraged in this work. I compared performance of the created application based on its feature extraction configuration, selection of classification algorithm, and amount of data used for training and cross-validation testing. Finally, 
+I performed a comparison between my solution and two other existing approaches which are adequate for the problem which is considered in this work.
 
-Algorithms which suit well for binary polarization task, perform very poor on 5 degree classification.
+It became clear, which tweaks really improved the performance and which did not. Despite being theoretically significant, some features does not better the results. On the other hand, the usage of boolean vector words representation produced much better result than I expected. There was no noticeable difference in performance between Naive Bayes and Logistic regression classificatiors, yet some subtle distinction took place. Therefore, I concluded that feature extraction is the most crucial step in sentiment analysis. Moreover, although a particular feature extractor can provide good results for some domains, changing a domain or classification accuracy requirements will probably make this extractor unsuitable. 
 
-Product reviews, etc are relatively easy
+In spite of product reviews being relatively easy to classify as positive and negative, performing more accurate classification is a challenging task. Algorithms which suit well for binary polarization task, performed very poor on 5 degree classification. A confusion matrix obervation for this algorithms demonstrated that they tend to polarize reviews too much. Instead of making uniform erros, most of reviews classified incorrectly were given class 1 or class 5.
 
-I learned a lot from this project. I’m so glad that I was able to pull together what I’ve learned in several different areas to work on one unified program.
-
-Taking a look at my results, though, I have a few comments.
-
-My classification results aren’t that great. I had hoped to get much higher than a 60-65\% correct classification rate. That’s quite alright with me, though; it means I have plenty of room to improve this program! I could try different classification algorithms, different wordlists, even different training data. There’s lots of space to work.
-
-My code isn’t particularly pretty, and I would like to change that. I’ve just started to read Google’s Style Guide for R and I’ve noticed a few things I do wrong. I’ll set out to fix those in later versions of this program if I choose to move forward with it.
+My application combines both theoretical background and practical parameter tweaking mechanism. As a result, it performs better than generic solutions for sentiment analysis. Moreover, my program provides better result than a program which is specifically designed for the data set being analyzed but intended to distinguish only positive and negative reviews. The performance can be improved further, yet it will cause reducing feature extraction and training speed.
 
 \newpage
 
