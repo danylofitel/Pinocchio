@@ -35,10 +35,6 @@ class NonNaiveBayes:
     probability_1_in_legitimate = []
     probability_1_in_spam = []
 
-    # Lambda i(x) = P(xi, S) / P(x_i, L) is the likelihood ratio.
-    #likelihood_0 = []
-    #likelihood_1 = []
-
     # Tries for performing lookups of conditional probabilities
     # P(x_i | x_1, ..., x_{i-1}, L) and P(x_i | x_1, ..., x_{i-1}, S)
     legitimate_trie = Node()
@@ -86,9 +82,6 @@ class NonNaiveBayes:
         for i in range(0, self.n):
             self.probability_1_in_legitimate[i] = legitimate_counts[i] / float(self.legitimate_count)
             self.probability_1_in_spam[i] = spam_counts[i] / float(self.spam_count)
-
-            #self.likelihood_0[i] = self.divide((1.0 - self.probability_1_in_spam[i]), (1.0 - self.probability_1_in_legitimate[i]))
-            #self.likelihood_1[i] = self.divide(self.probability_1_in_spam[i], self.probability_1_in_legitimate[i])
 
     def add_message_to_trie(self, message, root):
         node = root

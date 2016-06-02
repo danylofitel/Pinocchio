@@ -58,11 +58,11 @@ print "F_S = ", F_S
 print bayesian_classifier.search_depths
 
 count = len(bayesian_classifier.search_depths)
-sum_ = 0.0
-max_ = 0
+sum_depths = 0.0
+max_depth = 0
 for i in bayesian_classifier.search_depths:
-    max_ = max(max_, i)
-    sum_ += i
+    max_depth = max(max_depth, i)
+    sum_depths += i
 
-print "Average ", sum_ / float(count)
-print "Max ", max_
+print "Average depth: ", sum_depths / float(count)
+print "Max depth: ", max_depth
